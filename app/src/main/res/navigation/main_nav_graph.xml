@@ -9,7 +9,11 @@
         android:id="@+id/nav_home"
         android:name="io.github.thwisse.kentinsesi.ui.home.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_createPostFragment"
+            app:destination="@id/createPostFragment" />
+    </fragment>
     <fragment
         android:id="@+id/nav_map"
         android:name="io.github.thwisse.kentinsesi.ui.map.MapFragment"
@@ -25,4 +29,9 @@
         android:name="io.github.thwisse.kentinsesi.ui.profile.ProfileFragment"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/createPostFragment"
+        android:name="io.github.thwisse.kentinsesi.ui.post.CreatePostFragment"
+        android:label="Bildirim Oluştur"
+        tools:layout="@layout/fragment_create_post" />
 </navigation>

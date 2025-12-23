@@ -23,6 +23,18 @@
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+
+        <action
+            android:id="@+id/action_registerFragment_to_setupProfileFragment"
+            app:destination="@id/setupProfileFragment"
+            app:popUpTo="@id/registerFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+
+    <fragment
+        android:id="@+id/setupProfileFragment"
+        android:name="io.github.thwisse.kentinsesi.ui.auth.SetupProfileFragment"
+        android:label="fragment_setup_profile"
+        tools:layout="@layout/fragment_setup_profile" />
 
 </navigation>

@@ -47,17 +47,18 @@ class RegisterFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnRegister.setOnClickListener {
-            val fullName = binding.etFullName.text.toString().trim()
+            // fullName okuma satırını SİLDİK
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "Tüm alanlar doldurulmalıdır", Toast.LENGTH_SHORT)
-                    .show()
+            // İsim kontrolünü SİLDİK
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(requireContext(), "E-posta ve şifre gereklidir", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            // Sadece ViewModel'i çağır
-            viewModel.registerUser(fullName, email, password)
+
+            // ViewModel'e sadece email ve şifre gönderiyoruz
+            viewModel.registerUser(email, password)
         }
 
         binding.tvGoToLogin.setOnClickListener {
@@ -76,10 +77,11 @@ class RegisterFragment : Fragment() {
 
                     when (state) {
                         is AuthState.Success -> {
-                            Toast.makeText(requireContext(), "Kayıt başarılı!", Toast.LENGTH_SHORT)
-                                .show()
-                            Log.d("RegisterFragment", "Kayıt başarılı!")
-                            navigateToMain()
+                            Toast.makeText(requireContext(), "Kayıt başarılı! Lütfen profilini tamamla.", Toast.LENGTH_SHORT).show()
+
+                            // DİKKAT: Artık navigateToMain() YOK.
+                            // auth_nav_graph içinde bir sonraki adıma geçiyoruz:
+                            findNavController().navigate(R.id.action_registerFragment_to_setupProfileFragment)
                         }
 
                         is AuthState.Error -> {

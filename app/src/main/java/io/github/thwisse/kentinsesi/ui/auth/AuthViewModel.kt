@@ -1,85 +1,106 @@
-package io.github.thwisse.kentinsesi.ui.auth // Paket adını kontrol et
+package io.github.thwisse.kentinsesi.ui.auth
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope // Coroutine'ler için
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthResult
-import dagger.hilt.android.lifecycle.HiltViewModel // Hilt için
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository
 import io.github.thwisse.kentinsesi.data.repository.UserRepository
-import kotlinx.coroutines.launch // Coroutine başlatmak için
-import javax.inject.Inject // Hilt enjeksiyonu için
+import io.github.thwisse.kentinsesi.util.Resource
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-// UI durumlarını temsil etmek için basit bir Sealed Class (veya Enum kullanabilirsiniz)
+// UI Durumları
 sealed class AuthState {
-    object Idle : AuthState() // Başlangıç durumu
-    object Loading : AuthState() // İşlem yapılıyor
-    data class Success(val authResult: AuthResult) : AuthState() // Başarılı
-    data class Error(val message: String) : AuthState() // Hata
+    object Idle : AuthState()
+    object Loading : AuthState()
+    data class Success(val authResult: AuthResult) : AuthState()
+    data class Error(val message: String) : AuthState()
 }
 
-@HiltViewModel // Hilt'e bu ViewModel'i nasıl oluşturacağını ve sağlayacağını söyler
+@HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository, // Hilt, RepositoryModule sayesinde bunu enjekte edecek
-    private val userRepository: UserRepository  // Hilt, RepositoryModule sayesinde bunu enjekte edecek
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    // --- Giriş Durumu (Login State) ---
-    // _loginState: Sadece ViewModel içinden değiştirilebilir (Mutable)
+    // --- Giriş Durumu ---
     private val _loginState = MutableLiveData<AuthState>(AuthState.Idle)
-
-    // loginState: Fragment'ların dinleyeceği, değiştirilemez (Immutable) versiyon
     val loginState: LiveData<AuthState> = _loginState
 
-    // --- Kayıt Durumu (Registration State) ---
+    // --- Kayıt Durumu ---
     private val _registrationState = MutableLiveData<AuthState>(AuthState.Idle)
     val registrationState: LiveData<AuthState> = _registrationState
 
-    // Giriş yapma fonksiyonu
+    // --- Profil Güncelleme Durumu (YENİ) ---
+    // Resource<Unit> kullanıyoruz çünkü geriye veri dönmüyor, sadece başarı/hata önemli.
+    private val _updateProfileState = MutableLiveData<Resource<Unit>>()
+    val updateProfileState: LiveData<Resource<Unit>> = _updateProfileState
+
+    // GİRİŞ YAP
     fun loginUser(email: String, password: String) {
-        // ViewModelScope: Bu Coroutine, ViewModel yaşadığı sürece yaşar.
         viewModelScope.launch {
-            _loginState.value = AuthState.Loading // Durumu 'Yükleniyor' yap
+            _loginState.value = AuthState.Loading
             val result = authRepository.loginUser(email, password)
             result.onSuccess { authResult ->
-                _loginState.value = AuthState.Success(authResult) // Başarılı
+                _loginState.value = AuthState.Success(authResult)
             }.onFailure { exception ->
-                _loginState.value =
-                    AuthState.Error(exception.message ?: "Bilinmeyen giriş hatası") // Hata
+                _loginState.value = AuthState.Error(exception.message ?: "Giriş hatası")
             }
         }
     }
 
-    // Kayıt olma fonksiyonu
-    fun registerUser(fullName: String, email: String, password: String) {
+    // KAYIT OL (Düzeltildi: İsim parametresi kalktı ve Resource tipi düzeltildi)
+    fun registerUser(email: String, password: String) {
         viewModelScope.launch {
-            _registrationState.value = AuthState.Loading // Durumu 'Yükleniyor' yap
-            // 1. Firebase Auth'a kaydet
-            val registerResult = authRepository.registerUser(email, password)
+            _registrationState.value = AuthState.Loading
 
-            registerResult.onSuccess { authResult ->
-                // 2. Auth başarılıysa, Firestore'a profili kaydet
-                val user = authResult.user // Yeni kaydedilen kullanıcıyı al
+            // 1. Auth İşlemi (Hala Result dönüyor)
+            val authResult = authRepository.registerUser(email, password)
+
+            authResult.onSuccess { result ->
+                val user = result.user
                 if (user != null) {
-                    val profileResult = userRepository.createUserProfile(user.uid, fullName, email)
-                    profileResult.onSuccess {
-                        // Hem Auth hem Profil kaydı başarılı
-                        _registrationState.value = AuthState.Success(authResult)
-                    }.onFailure { profileException ->
-                        // Profil kaydı başarısız (Auth başarılıydı ama profil yazılamadı)
-                        // TODO: Bu durumu daha iyi yönetmek gerekebilir (örn: Auth kaydını geri almak?)
-                        _registrationState.value =
-                            AuthState.Error(profileException.message ?: "Profil oluşturma hatası")
+                    // 2. Profil Oluşturma (Artık Resource dönüyor)
+                    // İsmi şimdilik boş ("") gönderiyoruz.
+                    val profileResource = userRepository.createUserProfile(user.uid, "", email)
+
+                    // Resource kontrolü (onSuccess yerine when kullanıyoruz)
+                    when (profileResource) {
+                        is Resource.Success -> {
+                            _registrationState.value = AuthState.Success(result)
+                        }
+                        is Resource.Error -> {
+                            _registrationState.value = AuthState.Error(profileResource.message ?: "Profil hatası")
+                        }
+                        is Resource.Loading -> {
+                            // Loading durumu zaten başta set edildi
+                        }
                     }
                 } else {
-                    // Auth sonucu başarılı ama user nesnesi null geldi (beklenmedik durum)
-                    _registrationState.value = AuthState.Error("Kullanıcı bilgisi alınamadı.")
+                    _registrationState.value = AuthState.Error("Kullanıcı verisi alınamadı.")
                 }
-            }.onFailure { authException ->
-                // Auth kaydı başarısız oldu
-                _registrationState.value =
-                    AuthState.Error(authException.message ?: "Bilinmeyen kayıt hatası")
+            }.onFailure { exception ->
+                _registrationState.value = AuthState.Error(exception.message ?: "Kayıt hatası")
+            }
+        }
+    }
+
+    // PROFİL TAMAMLAMA (YENİ)
+    fun completeProfile(fullName: String, city: String, district: String) {
+        viewModelScope.launch {
+            // Resource.Loading<Unit> olarak tip belirtiyoruz (Hata: Cannot infer type çözümü)
+            _updateProfileState.value = Resource.Loading()
+
+            val currentUser = authRepository.currentUser
+            if (currentUser != null) {
+                val result = userRepository.updateUserProfile(currentUser.uid, fullName, city, district)
+                _updateProfileState.value = result
+            } else {
+                // Resource.Error<Unit> olarak tip belirtiyoruz
+                _updateProfileState.value = Resource.Error("Kullanıcı oturumu bulunamadı.")
             }
         }
     }

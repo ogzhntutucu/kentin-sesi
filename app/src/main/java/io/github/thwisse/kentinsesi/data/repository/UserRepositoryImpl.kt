@@ -2,39 +2,50 @@ package io.github.thwisse.kentinsesi.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import io.github.thwisse.kentinsesi.data.model.User
+import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-// UserRepository interface'inin Firestore ile çalışan somut implementasyonu
 class UserRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore // Hilt, FirebaseModule sayesinde bunu sağlayacak
+    private val firestore: FirebaseFirestore
 ) : UserRepository {
 
     companion object {
-        private const val USERS_COLLECTION = "users" // Koleksiyon adını sabit olarak tanımlayalım
+        private const val USERS_COLLECTION = "users"
     }
 
-    override suspend fun createUserProfile(
-        uid: String,
-        fullName: String,
-        email: String
-    ): Result<Unit> {
+    // 1. Kullanıcı Profili Oluşturma
+    override suspend fun createUserProfile(uid: String, fullName: String, email: String): Resource<Unit> {
         return try {
-            // Yeni bir User nesnesi oluştur
             val newUser = User(
                 uid = uid,
                 fullName = fullName,
                 email = email,
-                role = "citizen" // Varsayılan rol
-                // points ve title zaten varsayılan değerlere sahip
+                role = "citizen"
             )
-            // Firestore'daki "users" koleksiyonuna, kullanıcının uid'sini doküman ID'si olarak kullanarak yaz.
             firestore.collection(USERS_COLLECTION).document(uid).set(newUser).await()
-            Result.success(Unit) // Başarılı, geriye bir şey döndürmeye gerek yok
+            // Düzeltme: Result.success yerine Resource.Success kullanıyoruz
+            Resource.Success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            // Düzeltme: Result.failure yerine Resource.Error kullanıyoruz
+            Resource.Error(e.message ?: "Profil oluşturulamadı.")
         }
     }
 
-    // İleride getUserProfile fonksiyonunu buraya ekleyeceğiz...
+    // 2. Kullanıcı Profili Güncelleme (YENİ EKLENEN)
+    override suspend fun updateUserProfile(uid: String, fullName: String, city: String, district: String): Resource<Unit> {
+        return try {
+            val updates = mapOf(
+                "fullName" to fullName,
+                "city" to city,
+                "district" to district,
+                "title" to "Duyarlı Vatandaş"
+            )
+
+            firestore.collection(USERS_COLLECTION).document(uid).update(updates).await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Profil güncellenemedi.")
+        }
+    }
 }

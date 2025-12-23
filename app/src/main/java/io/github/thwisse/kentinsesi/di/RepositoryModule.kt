@@ -6,6 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository // Interface importu
 import io.github.thwisse.kentinsesi.data.repository.AuthRepositoryImpl // Implementasyon importu
+import io.github.thwisse.kentinsesi.data.repository.PostRepository
+import io.github.thwisse.kentinsesi.data.repository.PostRepositoryImpl
 import io.github.thwisse.kentinsesi.data.repository.UserRepository
 import io.github.thwisse.kentinsesi.data.repository.UserRepositoryImpl
 import javax.inject.Singleton
@@ -27,4 +29,11 @@ abstract class RepositoryModule {
     ): UserRepository
 
     // TODO: Adım X'te PostRepository için @Binds metodu buraya eklenecek.
+
+    // ... (AuthRepository ve UserRepository bind'ları burada duruyor)
+    @Binds
+    @Singleton
+    abstract fun bindPostRepository(
+        postRepositoryImpl: PostRepositoryImpl
+    ): PostRepository
 }
