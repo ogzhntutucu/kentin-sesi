@@ -71,6 +71,7 @@ class HomeFragment : Fragment() {
 
         setupRecyclerView()
         setupMenu()
+        setupSwipeRefresh() // YENİ: Bunu çağır
         observePosts()
 
         // Filtre ekranından gelen sonuçları dinle
@@ -87,6 +88,12 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refreshPosts() // YENİ FONKSİYONU ÇAĞIRIYORUZ
+        }
+    }
+
     private fun setupRecyclerView() {
         val currentUserId = viewModel.currentUserId
 
@@ -99,7 +106,8 @@ class HomeFragment : Fragment() {
 
     private fun observePosts() {
         viewModel.postsState.observe(viewLifecycleOwner) { resource ->
-            binding.progressBar.isVisible = resource is Resource.Loading
+            // Yükleniyor durumunda SwipeRefresh'in dönen dairesini göster/gizle
+            binding.swipeRefreshLayout.isRefreshing = resource is Resource.Loading
 
             when (resource) {
                 is Resource.Success -> {
@@ -107,8 +115,12 @@ class HomeFragment : Fragment() {
                 }
                 is Resource.Error -> {
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    // Hata olsa bile dönmeyi durdur
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
-                is Resource.Loading -> { }
+                is Resource.Loading -> {
+                    // isRefreshing = true zaten yukarıda yapıldı
+                }
             }
         }
     }

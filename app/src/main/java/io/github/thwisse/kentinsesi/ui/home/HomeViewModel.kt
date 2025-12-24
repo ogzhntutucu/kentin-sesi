@@ -48,6 +48,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // Mevcut filtrelerle yenileme yap
+    fun refreshPosts() {
+        getPosts(lastDistrict, lastCategory, lastStatus)
+    }
+
     // Beğeni (Upvote) Fonksiyonu
     fun toggleUpvote(post: Post) {
         val userId = currentUserId
