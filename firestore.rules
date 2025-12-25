@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper fonksiyon: Kullanıcı giriş yapmış mı?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper fonksiyon: Kullanıcı kendi verisini mi değiştiriyor?
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper fonksiyon: Kullanıcı yetkili (official/admin) mi?
+    function isOfficial() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['official', 'admin'];
+    }
+    
+    // Helper fonksiyon: Kullanıcı admin mi?
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========== USERS COLLECTION ==========
+    match /users/{userId} {
+      // Okuma: Herkes kendi profilini okuyabilir, diğerlerini de okuyabilir (profil görüntüleme için)
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Sadece kendi profilini oluşturabilir
+      allow create: if isOwner(userId);
+      
+      // Güncelleme: Sadece kendi profilini güncelleyebilir (admin hariç)
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Silme: Sadece admin silebilir
+      allow delete: if isAdmin();
+    }
+    
+    // ========== POSTS COLLECTION ==========
+    match /posts/{postId} {
+      // Okuma: Giriş yapmış herkes okuyabilir
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Giriş yapmış herkes post oluşturabilir
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.authorId);
+      
+      // Güncelleme: 
+      // - Post sahibi kendi postunu güncelleyebilir (sadece title, description, category)
+      // - Yetkili kullanıcılar status'u güncelleyebilir
+      allow update: if isAuthenticated() && (
+        // Post sahibi sadece belirli alanları güncelleyebilir
+        (isOwner(resource.data.authorId) && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description', 'category', 'imageUrl'])) ||
+        // Yetkili kullanıcılar status'u güncelleyebilir
+        (isOfficial() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+      );
+      
+      // Silme: Post sahibi veya admin silebilir
+      allow delete: if isAuthenticated() && 
+                       (isOwner(resource.data.authorId) || isAdmin());
+      
+      // ========== COMMENTS SUBCOLLECTION ==========
+      match /comments/{commentId} {
+        // Okuma: Giriş yapmış herkes okuyabilir
+        allow read: if isAuthenticated();
+        
+        // Oluşturma: Giriş yapmış herkes yorum yapabilir
+        allow create: if isAuthenticated() && 
+                         isOwner(request.resource.data.authorId);
+        
+        // Güncelleme: Sadece yorum sahibi güncelleyebilir
+        allow update: if isAuthenticated() && 
+                         isOwner(resource.data.authorId);
+        
+        // Silme: Yorum sahibi veya admin silebilir
+        allow delete: if isAuthenticated() && 
+                         (isOwner(resource.data.authorId) || isAdmin());
+      }
+    }
+  }
+}
+

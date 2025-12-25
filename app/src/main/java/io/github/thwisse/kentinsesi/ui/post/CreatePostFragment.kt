@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.databinding.FragmentCreatePostBinding
 import io.github.thwisse.kentinsesi.util.Resource
+import io.github.thwisse.kentinsesi.util.ValidationUtils
 
 @AndroidEntryPoint
 class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
@@ -97,28 +98,80 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             val category = binding.actvCategory.text.toString().trim()
             val selectedDistrict = binding.actvDistrict.text.toString().trim()
 
-            if (title.isEmpty() || description.isEmpty() || category.isEmpty()) {
-                Toast.makeText(requireContext(), "Lütfen başlık, açıklama ve kategori giriniz.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            // ValidationUtils kullanarak daha iyi hata mesajları gösteriyoruz
+            var hasError = false
+
+            // Başlık kontrolü
+            val titleError = ValidationUtils.getValidationError("title", title)
+            when {
+                title.isEmpty() -> {
+                    binding.etTitle.error = "Başlık gereklidir"
+                    binding.etTitle.requestFocus()
+                    hasError = true
+                }
+                titleError != null -> {
+                    binding.etTitle.error = titleError
+                    binding.etTitle.requestFocus()
+                    hasError = true
+                }
             }
 
+            // Açıklama kontrolü
+            val descriptionError = ValidationUtils.getValidationError("description", description)
+            when {
+                description.isEmpty() -> {
+                    binding.etDescription.error = "Açıklama gereklidir"
+                    if (!hasError) {
+                        binding.etDescription.requestFocus()
+                        hasError = true
+                    }
+                }
+                descriptionError != null -> {
+                    binding.etDescription.error = descriptionError
+                    if (!hasError) {
+                        binding.etDescription.requestFocus()
+                        hasError = true
+                    }
+                }
+            }
+
+            // Kategori kontrolü
+            if (category.isEmpty()) {
+                binding.actvCategory.error = "Kategori seçilmelidir"
+                if (!hasError) {
+                    binding.actvCategory.requestFocus()
+                    hasError = true
+                }
+            }
+
+            // Fotoğraf kontrolü
             if (selectedImageUri == null) {
                 Toast.makeText(requireContext(), "Lütfen bir fotoğraf seçiniz.", Toast.LENGTH_SHORT).show()
+                hasError = true
+            }
+
+            // Konum kontrolü
+            if (currentLatitude == null || currentLongitude == null) {
+                Toast.makeText(requireContext(), "Lütfen haritadan bir konum seçiniz.", Toast.LENGTH_SHORT).show()
+                hasError = true
+            }
+
+            // Hata varsa işlemi durdur
+            if (hasError) {
                 return@setOnClickListener
             }
 
-            // KONUM KONTROLÜ: Kullanıcı haritadan seçmek ZORUNDA
-            if (currentLatitude == null || currentLongitude == null) {
-                Toast.makeText(requireContext(), "Lütfen haritadan bir konum seçiniz.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            // Tüm validasyonlar geçti, hata mesajlarını temizle
+            binding.etTitle.error = null
+            binding.etDescription.error = null
+            binding.actvCategory.error = null
 
             // Her şey tamamsa gönder
             viewModel.createPost(
                 title = title,
                 description = description,
                 category = category,
-                latitude = currentLatitude!!, // null olmadığına eminiz
+                latitude = currentLatitude!!,
                 longitude = currentLongitude!!,
                 district = selectedDistrict,
                 imageUri = selectedImageUri!!

@@ -12,8 +12,11 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.data.model.Post
+import io.github.thwisse.kentinsesi.data.model.PostStatus
 import io.github.thwisse.kentinsesi.databinding.FragmentPostDetailBinding
 import io.github.thwisse.kentinsesi.util.Resource
+import io.github.thwisse.kentinsesi.util.ValidationUtils
+import androidx.core.view.isVisible
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
@@ -39,14 +42,18 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
         if (post != null) {
             currentPostId = post.id
+            // ViewModel'e post bilgisini set et (yetkili kontrolü için gerekli)
+            viewModel.setPost(post)
+            
             setupViews(post)
             setupMap(post)
             setupComments()
+            setupOfficialActions() // Yetkili butonlarını ayarla
 
             // Yorumları Çek
             viewModel.getComments(post.id)
 
-            // Yetki Kontrolü ve Menü
+            // Menü kurulumu - Post sahibi için
             if (viewModel.currentUserId == post.authorId) {
                 setupOwnerMenu()
             }
@@ -63,6 +70,16 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: android.view.Menu, menuInflater: android.view.MenuInflater) {
                 menuInflater.inflate(io.github.thwisse.kentinsesi.R.menu.menu_post_detail, menu)
+                
+                // Yetkili kontrolü - Sadece yetkili kullanıcılar durum güncelleyebilir
+                viewModel.canUpdateStatus.observe(viewLifecycleOwner) { canUpdate ->
+                    menu.findItem(io.github.thwisse.kentinsesi.R.id.action_resolve)?.isVisible = canUpdate
+                }
+                
+                // Silme kontrolü - Post sahibi veya admin silebilir
+                viewModel.canDeletePost.observe(viewLifecycleOwner) { canDelete ->
+                    menu.findItem(io.github.thwisse.kentinsesi.R.id.action_delete)?.isVisible = canDelete
+                }
             }
 
             override fun onMenuItemSelected(menuItem: android.view.MenuItem): Boolean {
@@ -133,19 +150,77 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
         binding.btnSendComment.setOnClickListener {
             val text = binding.etComment.text.toString().trim()
-            if (text.isNotEmpty() && currentPostId != null) {
-                viewModel.addComment(currentPostId!!, text)
-                binding.etComment.text.clear()
-            } else {
-                Toast.makeText(requireContext(), "Yorum boş olamaz", Toast.LENGTH_SHORT).show()
+            
+            // ValidationUtils kullanarak yorum kontrolü
+            val commentError = ValidationUtils.getValidationError("comment", text)
+            
+            when {
+                text.isEmpty() -> {
+                    binding.etComment.error = "Yorum boş olamaz"
+                    binding.etComment.requestFocus()
+                    return@setOnClickListener
+                }
+                commentError != null -> {
+                    binding.etComment.error = commentError
+                    binding.etComment.requestFocus()
+                    return@setOnClickListener
+                }
+                currentPostId == null -> {
+                    Toast.makeText(requireContext(), "Post ID bulunamadı", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
             }
+            
+            viewModel.addComment(currentPostId!!, text)
+            binding.etComment.text.clear()
+            binding.etComment.error = null
         }
 
         viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
-            if(resource is Resource.Success) commentAdapter.submitList(resource.data)
+            when (resource) {
+                is Resource.Success -> commentAdapter.submitList(resource.data)
+                is Resource.Error -> Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                is Resource.Loading -> { }
+            }
         }
-        viewModel.addCommentState.observe(viewLifecycleOwner) {
-            // Hata mesajı vs.
+        
+        viewModel.addCommentState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Error -> {
+                    binding.etComment.error = resource.message
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Success -> {
+                    // Yorum başarıyla eklendi, yorumlar otomatik yenilenecek
+                }
+                is Resource.Loading -> { }
+            }
+        }
+    }
+    
+    /**
+     * Yetkili kullanıcılar için butonları ayarla
+     */
+    private fun setupOfficialActions() {
+        // Yetkili kontrolü için LiveData'ları observe et
+        viewModel.canUpdateStatus.observe(viewLifecycleOwner) { canUpdate ->
+            // Yetkili butonlarını göster/gizle
+            // Bu butonlar layout'ta olmalı, şimdilik sadece menüde gösteriyoruz
+        }
+        
+        // Post durumunu göster
+        viewModel.currentPost.observe(viewLifecycleOwner) { post ->
+            post?.let {
+                // Post durumunu göster (opsiyonel)
+                val statusText = when (it.statusEnum) {
+                    PostStatus.NEW -> "Yeni"
+                    PostStatus.IN_PROGRESS -> "İşleme Alındı"
+                    PostStatus.RESOLVED -> "Çözüldü"
+                    PostStatus.REJECTED -> "Reddedildi"
+                }
+                // Eğer layout'ta status gösterilecek bir TextView varsa:
+                // binding.tvStatus.text = statusText
+            }
         }
     }
 

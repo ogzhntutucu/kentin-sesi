@@ -19,6 +19,7 @@ import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.databinding.FragmentLoginBinding
 import io.github.thwisse.kentinsesi.ui.AuthActivity
 import io.github.thwisse.kentinsesi.ui.MainActivity
+import io.github.thwisse.kentinsesi.util.ValidationUtils
 import kotlinx.coroutines.launch // Coroutine için
 
 @AndroidEntryPoint // Hilt'in bu fragment'a ViewModel enjekte edebilmesi için
@@ -50,15 +51,34 @@ class LoginFragment : Fragment() {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    "E-posta ve şifre girilmelidir",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
+            // ValidationUtils kullanarak daha iyi hata mesajları gösteriyoruz
+            val emailError = ValidationUtils.getValidationError("email", email)
+            val passwordError = ValidationUtils.getValidationError("password", password)
+
+            when {
+                email.isEmpty() -> {
+                    binding.etEmail.error = "E-posta adresi gereklidir"
+                    binding.etEmail.requestFocus()
+                    return@setOnClickListener
+                }
+                emailError != null -> {
+                    binding.etEmail.error = emailError
+                    binding.etEmail.requestFocus()
+                    return@setOnClickListener
+                }
+                password.isEmpty() -> {
+                    binding.etPassword.error = "Şifre gereklidir"
+                    binding.etPassword.requestFocus()
+                    return@setOnClickListener
+                }
+                passwordError != null -> {
+                    binding.etPassword.error = passwordError
+                    binding.etPassword.requestFocus()
+                    return@setOnClickListener
+                }
             }
-            // Artık Firebase kodları burada değil, sadece ViewModel'i çağırıyoruz
+
+            // Tüm validasyonlar geçti, ViewModel'i çağır
             viewModel.loginUser(email, password)
         }
 

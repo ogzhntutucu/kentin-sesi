@@ -5,11 +5,13 @@ import io.github.thwisse.kentinsesi.util.Resource
 
 // Kullanıcı profili işlemleri için sözleşme
 interface UserRepository {
-    // ... mevcut createUserProfile fonksiyonu burada kalsın ...
-
     suspend fun createUserProfile(uid: String, fullName: String, email: String): Resource<Unit>
-
-    // --- BU FONKSİYONU EKLE ---
-    // Kullanıcının eksik bilgilerini (isim, il, ilçe) tamamlamak için
+    
     suspend fun updateUserProfile(uid: String, fullName: String, city: String, district: String): Resource<Unit>
+    
+    // Kullanıcı bilgisini getir
+    suspend fun getUser(uid: String): Resource<User>
+    
+    // Kullanıcının rolünü kontrol et
+    suspend fun getUserRole(uid: String): Resource<String>
 }

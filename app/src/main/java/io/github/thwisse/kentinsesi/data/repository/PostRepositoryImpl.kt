@@ -5,8 +5,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.storage.FirebaseStorage
-import io.github.thwisse.kentinsesi.data.model.Comment // <-- 1. EKSİK IMPORT EKLENDİ
+import io.github.thwisse.kentinsesi.data.model.Comment
 import io.github.thwisse.kentinsesi.data.model.Post
+import io.github.thwisse.kentinsesi.data.model.PostStatus
+import io.github.thwisse.kentinsesi.util.Constants
 import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
@@ -34,7 +36,8 @@ class PostRepositoryImpl @Inject constructor(
             }
 
             val imageFileName = "${UUID.randomUUID()}.jpg"
-            val storageRef = storage.reference.child("post_images/$imageFileName")
+            // Constants kullanarak hard-coded string'den kurtulduk
+            val storageRef = storage.reference.child("${Constants.STORAGE_POST_IMAGES}/$imageFileName")
 
             storageRef.putFile(imageUri).await()
             val downloadUrl = storageRef.downloadUrl.await().toString()
@@ -47,11 +50,13 @@ class PostRepositoryImpl @Inject constructor(
                 imageUrl = downloadUrl,
                 location = GeoPoint(latitude, longitude),
                 district = district,
-                status = "new",
+                // Enum kullanarak tip güvenli hale getirdik
+                status = PostStatus.NEW.value, // "new" yerine PostStatus.NEW.value
                 upvoteCount = 0
             )
 
-            firestore.collection("posts").add(newPost).await()
+            // Constants kullanarak collection adını merkezileştirdik
+            firestore.collection(Constants.COLLECTION_POSTS).add(newPost).await()
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Hata")
@@ -60,7 +65,7 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun toggleUpvote(postId: String, userId: String): Resource<Unit> {
         return try {
-            val postRef = firestore.collection("posts").document(postId)
+            val postRef = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
 
             firestore.runTransaction { transaction ->
                 val snapshot = transaction.get(postRef)
@@ -89,7 +94,7 @@ class PostRepositoryImpl @Inject constructor(
         status: String?
     ): Resource<List<Post>> {
         return try {
-            var query = firestore.collection("posts") as com.google.firebase.firestore.Query
+            var query = firestore.collection(Constants.COLLECTION_POSTS) as com.google.firebase.firestore.Query
 
             if (!district.isNullOrEmpty()) {
                 query = query.whereEqualTo("district", district)
@@ -119,8 +124,8 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun getComments(postId: String): Resource<List<Comment>> {
         return try {
-            val snapshot = firestore.collection("posts").document(postId)
-                .collection("comments")
+            val snapshot = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+                .collection(Constants.COLLECTION_COMMENTS)
                 .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.ASCENDING)
                 .get()
                 .await()
@@ -146,8 +151,8 @@ class PostRepositoryImpl @Inject constructor(
                 text = text
             )
 
-            firestore.collection("posts").document(postId)
-                .collection("comments")
+            firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+                .collection(Constants.COLLECTION_COMMENTS)
                 .add(comment)
                 .await()
 
@@ -159,8 +164,10 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun updatePostStatus(postId: String, newStatus: String): Resource<Unit> {
         return try {
-            firestore.collection("posts").document(postId)
-                .update("status", newStatus)
+            // Status'u enum'a çevirerek geçerliliğini kontrol ediyoruz
+            val statusEnum = PostStatus.fromString(newStatus)
+            firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+                .update("status", statusEnum.value)
                 .await()
             Resource.Success(Unit)
         } catch (e: Exception) {
@@ -171,7 +178,7 @@ class PostRepositoryImpl @Inject constructor(
     override suspend fun deletePost(postId: String): Resource<Unit> {
         return try {
             // 1. Önce Firestore'dan sil
-            firestore.collection("posts").document(postId).delete().await()
+            firestore.collection(Constants.COLLECTION_POSTS).document(postId).delete().await()
 
             // 2. (Opsiyonel ama iyi olur) Storage'dan resmi de silmek gerekir.
             // Bunun için postu çekerken imagePath'i de kaydetmemiz gerekirdi.
@@ -185,7 +192,7 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun getUserPosts(userId: String): Resource<List<Post>> {
         return try {
-            val snapshot = firestore.collection("posts")
+            val snapshot = firestore.collection(Constants.COLLECTION_POSTS)
                 .whereEqualTo("authorId", userId)
                 .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()

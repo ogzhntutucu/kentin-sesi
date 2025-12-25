@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.thwisse.kentinsesi.data.model.Post
+import io.github.thwisse.kentinsesi.data.model.PostStatus
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository
 import io.github.thwisse.kentinsesi.data.repository.PostRepository
 import io.github.thwisse.kentinsesi.util.Resource
@@ -45,9 +46,9 @@ class ProfileViewModel @Inject constructor(
             if (result is Resource.Success) {
                 val posts = result.data ?: emptyList()
 
-                // İstatistikleri hesapla
+                // İstatistikleri hesapla - Enum kullanarak tip güvenli hale getirdik
                 _totalPostsCount.value = posts.size
-                _resolvedPostsCount.value = posts.count { it.status == "resolved" }
+                _resolvedPostsCount.value = posts.count { it.statusEnum == PostStatus.RESOLVED }
             }
 
             _userPosts.value = result

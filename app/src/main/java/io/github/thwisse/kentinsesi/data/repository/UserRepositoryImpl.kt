@@ -2,6 +2,8 @@ package io.github.thwisse.kentinsesi.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import io.github.thwisse.kentinsesi.data.model.User
+import io.github.thwisse.kentinsesi.data.model.UserRole
+import io.github.thwisse.kentinsesi.util.Constants
 import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -10,10 +12,6 @@ class UserRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : UserRepository {
 
-    companion object {
-        private const val USERS_COLLECTION = "users"
-    }
-
     // 1. Kullanıcı Profili Oluşturma
     override suspend fun createUserProfile(uid: String, fullName: String, email: String): Resource<Unit> {
         return try {
@@ -21,31 +19,67 @@ class UserRepositoryImpl @Inject constructor(
                 uid = uid,
                 fullName = fullName,
                 email = email,
-                role = "citizen"
+                // Enum kullanarak tip güvenli hale getirdik
+                role = UserRole.CITIZEN.value // "citizen" yerine UserRole.CITIZEN.value
             )
-            firestore.collection(USERS_COLLECTION).document(uid).set(newUser).await()
-            // Düzeltme: Result.success yerine Resource.Success kullanıyoruz
+            // Constants kullanarak collection adını merkezileştirdik
+            firestore.collection(Constants.COLLECTION_USERS).document(uid).set(newUser).await()
             Resource.Success(Unit)
         } catch (e: Exception) {
-            // Düzeltme: Result.failure yerine Resource.Error kullanıyoruz
             Resource.Error(e.message ?: "Profil oluşturulamadı.")
         }
     }
 
-    // 2. Kullanıcı Profili Güncelleme (YENİ EKLENEN)
+    // 2. Kullanıcı Profili Güncelleme
     override suspend fun updateUserProfile(uid: String, fullName: String, city: String, district: String): Resource<Unit> {
         return try {
             val updates = mapOf(
                 "fullName" to fullName,
                 "city" to city,
                 "district" to district,
-                "title" to "Duyarlı Vatandaş"
+                // Constants kullanarak title'ı merkezileştirdik
+                "title" to Constants.TITLE_SENSITIVE_CITIZEN // "Duyarlı Vatandaş" yerine
             )
 
-            firestore.collection(USERS_COLLECTION).document(uid).update(updates).await()
+            firestore.collection(Constants.COLLECTION_USERS).document(uid).update(updates).await()
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Profil güncellenemedi.")
+        }
+    }
+    
+    // 3. Kullanıcı Bilgisini Getir
+    override suspend fun getUser(uid: String): Resource<User> {
+        return try {
+            val document = firestore.collection(Constants.COLLECTION_USERS).document(uid).get().await()
+            if (document.exists()) {
+                val user = document.toObject(User::class.java)
+                if (user != null) {
+                    Resource.Success(user)
+                } else {
+                    Resource.Error("Kullanıcı verisi okunamadı.")
+                }
+            } else {
+                Resource.Error("Kullanıcı bulunamadı.")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Kullanıcı bilgisi alınamadı.")
+        }
+    }
+    
+    // 4. Kullanıcı Rolünü Getir
+    override suspend fun getUserRole(uid: String): Resource<String> {
+        return try {
+            val document = firestore.collection(Constants.COLLECTION_USERS).document(uid).get().await()
+            if (document.exists()) {
+                // Enum'dan varsayılan değer kullanıyoruz
+                val role = document.getString("role") ?: UserRole.CITIZEN.value
+                Resource.Success(role)
+            } else {
+                Resource.Error("Kullanıcı bulunamadı.")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Kullanıcı rolü alınamadı.")
         }
     }
 }

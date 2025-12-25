@@ -19,6 +19,7 @@ import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.databinding.FragmentRegisterBinding
 import io.github.thwisse.kentinsesi.ui.AuthActivity
 import io.github.thwisse.kentinsesi.ui.MainActivity
+import io.github.thwisse.kentinsesi.util.ValidationUtils
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint // Hilt için
@@ -47,17 +48,37 @@ class RegisterFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnRegister.setOnClickListener {
-            // fullName okuma satırını SİLDİK
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            // İsim kontrolünü SİLDİK
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "E-posta ve şifre gereklidir", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            // ValidationUtils kullanarak daha iyi hata mesajları gösteriyoruz
+            val emailError = ValidationUtils.getValidationError("email", email)
+            val passwordError = ValidationUtils.getValidationError("password", password)
+
+            when {
+                email.isEmpty() -> {
+                    binding.etEmail.error = "E-posta adresi gereklidir"
+                    binding.etEmail.requestFocus()
+                    return@setOnClickListener
+                }
+                emailError != null -> {
+                    binding.etEmail.error = emailError
+                    binding.etEmail.requestFocus()
+                    return@setOnClickListener
+                }
+                password.isEmpty() -> {
+                    binding.etPassword.error = "Şifre gereklidir"
+                    binding.etPassword.requestFocus()
+                    return@setOnClickListener
+                }
+                passwordError != null -> {
+                    binding.etPassword.error = passwordError
+                    binding.etPassword.requestFocus()
+                    return@setOnClickListener
+                }
             }
 
-            // ViewModel'e sadece email ve şifre gönderiyoruz
+            // Tüm validasyonlar geçti, ViewModel'i çağır
             viewModel.registerUser(email, password)
         }
 

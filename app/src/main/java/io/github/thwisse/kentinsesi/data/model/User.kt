@@ -1,19 +1,43 @@
 package io.github.thwisse.kentinsesi.data.model
 
+import io.github.thwisse.kentinsesi.util.Constants
+
+/**
+ * User modeli - Uygulama kullanıcılarını temsil eder
+ * 
+ * NOT: Firestore string olarak sakladığı için role'u String olarak tutuyoruz,
+ * ama enum'a çevirmek için roleEnum property'si ekledik
+ */
 data class User(
     val uid: String = "",
     val email: String = "",
-
-    // --- YENİ EKLENEN ALANLAR ---
-    val fullName: String = "", // Artık kayıt anında değil, profil tamamlama ekranında dolacak
+    val fullName: String = "",
     val username: String = "", // @kullaniciadi gibi (isteğe bağlı)
     val city: String = "",     // Örn: Hatay
     val district: String = "", // Örn: İskenderun
-    // ---------------------------
-
-    val role: String = "citizen",
+    
+    // NOT: Firestore string olarak sakladığı için String kullanıyoruz
+    // Ama enum'a çevirmek için roleEnum property'si ekledik
+    val role: String = UserRole.CITIZEN.value, // Varsayılan: "citizen"
     val points: Long = 0,
-    val title: String = "Yeni Kullanıcı"
+    val title: String = Constants.TITLE_NEW_USER // Varsayılan: "Yeni Kullanıcı"
 ) {
-    // Firestore için boş constructor gerekliliği, varsayılan değerlerle ( = "" ) sağlanmış oldu.
+    /**
+     * Role'u enum olarak döndürür - Kod içinde kullanım için
+     * Örnek: if (user.roleEnum == UserRole.OFFICIAL) { ... }
+     */
+    val roleEnum: UserRole
+        get() = UserRole.fromString(role)
+    
+    /**
+     * Kullanıcının yetkili olup olmadığını kontrol eder
+     */
+    val isOfficial: Boolean
+        get() = roleEnum == UserRole.OFFICIAL || roleEnum == UserRole.ADMIN
+    
+    /**
+     * Kullanıcının admin olup olmadığını kontrol eder
+     */
+    val isAdmin: Boolean
+        get() = roleEnum == UserRole.ADMIN
 }

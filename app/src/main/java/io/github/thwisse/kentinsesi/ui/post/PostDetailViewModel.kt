@@ -1,13 +1,18 @@
 package io.github.thwisse.kentinsesi.ui.post
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.thwisse.kentinsesi.data.model.Comment
+import io.github.thwisse.kentinsesi.data.model.Post
+import io.github.thwisse.kentinsesi.data.model.PostStatus
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository
 import io.github.thwisse.kentinsesi.data.repository.PostRepository
+import io.github.thwisse.kentinsesi.data.repository.UserRepository
+import io.github.thwisse.kentinsesi.util.AuthorizationUtils
 import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PostDetailViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val authRepository: AuthRepository // YENİ: Kimlik kontrolü için
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository // Yetkili kontrolü için
 ) : ViewModel() {
 
     private val _commentsState = MutableLiveData<Resource<List<Comment>>>()
@@ -24,16 +30,69 @@ class PostDetailViewModel @Inject constructor(
     private val _addCommentState = MutableLiveData<Resource<Unit>>()
     val addCommentState: LiveData<Resource<Unit>> = _addCommentState
 
-    // YENİ STATE'LER
     private val _deletePostState = MutableLiveData<Resource<Unit>>()
     val deletePostState: LiveData<Resource<Unit>> = _deletePostState
 
     private val _updateStatusState = MutableLiveData<Resource<Unit>>()
     val updateStatusState: LiveData<Resource<Unit>> = _updateStatusState
+    
+    // Post bilgisi ve kullanıcı bilgisi
+    private val _currentPost = MutableLiveData<Post?>()
+    val currentPost: LiveData<Post?> = _currentPost
+    
+    private val _currentUser = MutableLiveData<io.github.thwisse.kentinsesi.data.model.User?>()
+    val currentUser: LiveData<io.github.thwisse.kentinsesi.data.model.User?> = _currentUser
+    
+    // Yetki kontrolleri için LiveData'lar - MediatorLiveData kullanarak
+    val canUpdateStatus: LiveData<Boolean> = MediatorLiveData<Boolean>().apply {
+        addSource(_currentUser) { user ->
+            value = AuthorizationUtils.canUpdatePostStatus(user)
+        }
+    }
+    
+    val canDeletePost: LiveData<Boolean> = MediatorLiveData<Boolean>().apply {
+        fun update() {
+            value = AuthorizationUtils.canDeletePost(_currentUser.value, _currentPost.value?.authorId)
+        }
+        addSource(_currentUser) { update() }
+        addSource(_currentPost) { update() }
+    }
 
     // Şu anki kullanıcı ID'si
     val currentUserId: String?
         get() = authRepository.currentUser?.uid
+    
+    /**
+     * Post detayını yükle ve kullanıcı bilgisini çek
+     */
+    fun loadPostDetails(postId: String) {
+        viewModelScope.launch {
+            // Post bilgisini çek (şimdilik getPosts'u kullanıyoruz, ilerde tek post çekme fonksiyonu eklenebilir)
+            loadCurrentUser()
+        }
+    }
+    
+    /**
+     * Mevcut kullanıcının bilgisini yükle
+     */
+    private suspend fun loadCurrentUser() {
+        val userId = currentUserId ?: return
+        val userResult = userRepository.getUser(userId)
+        if (userResult is Resource.Success) {
+            _currentUser.value = userResult.data
+        }
+    }
+    
+    /**
+     * Post bilgisini set et (Fragment'tan çağrılacak)
+     */
+    fun setPost(post: Post) {
+        _currentPost.value = post
+        // Kullanıcı bilgisini coroutine içinde yükle
+        viewModelScope.launch {
+            loadCurrentUser()
+        }
+    }
 
     fun getComments(postId: String) {
         viewModelScope.launch {
@@ -52,18 +111,58 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
-    // YENİ FONKSİYONLAR
+    /**
+     * Post'u sil - Sadece post sahibi veya admin silebilir
+     */
     fun deletePost(postId: String) {
         viewModelScope.launch {
+            val user = _currentUser.value
+            val post = _currentPost.value
+            
+            // Yetki kontrolü
+            if (!AuthorizationUtils.canDeletePost(user, post?.authorId)) {
+                _deletePostState.value = Resource.Error("Bu işlem için yetkiniz yok.")
+                return@launch
+            }
+            
             _deletePostState.value = Resource.Loading()
-            _deletePostState.value = postRepository.deletePost(postId)
+            val result = postRepository.deletePost(postId)
+            _deletePostState.value = result
         }
     }
 
+    /**
+     * Post'u "Çözüldü" olarak işaretle - Sadece yetkili kullanıcılar
+     */
     fun markAsResolved(postId: String) {
+        updatePostStatus(postId, PostStatus.RESOLVED)
+    }
+    
+    /**
+     * Post durumunu güncelle - Sadece yetkili kullanıcılar için
+     * @param postId Güncellenecek post'un ID'si
+     * @param status Yeni durum
+     */
+    fun updatePostStatus(postId: String, status: PostStatus) {
         viewModelScope.launch {
+            val user = _currentUser.value
+            
+            // Yetki kontrolü
+            if (!AuthorizationUtils.canUpdatePostStatus(user)) {
+                _updateStatusState.value = Resource.Error("Post durumunu güncellemek için yetkili olmanız gerekiyor.")
+                return@launch
+            }
+            
             _updateStatusState.value = Resource.Loading()
-            _updateStatusState.value = postRepository.updatePostStatus(postId, "resolved")
+            val result = postRepository.updatePostStatus(postId, status.value)
+            _updateStatusState.value = result
+            
+            // Başarılıysa post bilgisini güncelle
+            if (result is Resource.Success) {
+                _currentPost.value?.let { post ->
+                    _currentPost.value = post.copy(status = status.value)
+                }
+            }
         }
     }
 }

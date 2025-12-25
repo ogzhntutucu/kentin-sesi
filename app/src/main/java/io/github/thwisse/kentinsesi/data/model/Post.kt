@@ -1,38 +1,59 @@
 package io.github.thwisse.kentinsesi.data.model
 
-import com.google.firebase.Timestamp // <-- Timestamp için import
-import com.google.firebase.firestore.DocumentId // <-- Firestore ID'si için import
-import com.google.firebase.firestore.GeoPoint // <-- Konum için import
-import com.google.firebase.firestore.ServerTimestamp // <-- Sunucu zaman damgası için import
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.ServerTimestamp
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
-import java.util.Date
 
-@Parcelize // 1. Bu etiketi ekle
+/**
+ * Post modeli - Vatandaşların oluşturduğu bildirimleri temsil eder
+ * 
+ * ÖNEMLİ: Firestore string olarak sakladığı için status'u String olarak tutuyoruz,
+ * ama enum'a çevirmek için helper fonksiyonlar ekledik (aşağıda)
+ */
+@Parcelize
 data class Post(
-    val id: String = "", // Firestore Document ID'sini tutmak için gerekli (Eskiden yoktu, ekleyelim)
-    @DocumentId // Bu anotasyon, Firestore'un doküman ID'sini bu alana otomatik atamasını sağlar.
+    val id: String = "", // Firestore Document ID'si
+    @DocumentId
     val postId: String = "",
 
     val authorId: String = "", // Gönderiyi oluşturan kullanıcının UID'si
     val title: String = "",
     val description: String = "",
     val category: String = "",
-    val imageUrl: String? = null, // Fotoğraf olmayabilir, bu yüzden nullable (?) yaptık
-    val location: @RawValue GeoPoint? = null, // Konum bilgisi olmayabilir (?)
-
-    // YENİ EKLENEN ALAN:
+    val imageUrl: String? = null, // Fotoğraf olmayabilir
+    val location: @RawValue GeoPoint? = null, // Konum bilgisi olmayabilir
     val district: String? = null, // Örn: "İskenderun"
 
-    @ServerTimestamp // Firestore'a yazarken sunucu saatini otomatik atar, okurken Timestamp döner.
-    val createdAt: @RawValue Timestamp? = null, // İlk başta null olabilir
+    @ServerTimestamp
+    val createdAt: @RawValue Timestamp? = null,
 
-    val status: String = "new", // Varsayılan durum: yeni
+    // NOT: Firestore string olarak sakladığı için String kullanıyoruz
+    // Ama enum'a çevirmek için statusEnum property'si ekledik
+    val status: String = PostStatus.NEW.value, // Varsayılan: "new"
     val upvoteCount: Long = 0,
-
-    // YENİ EKLENEN: Bu postu beğenen kullanıcıların ID listesi
     val upvotedBy: List<String> = emptyList(),
-): Parcelable {
-    // Firestore için boş constructor (tüm alanların varsayılan değeri olduğu için otomatik üretilir)
+) : Parcelable {
+    
+    /**
+     * Status'u enum olarak döndürür - Kod içinde kullanım için
+     * Örnek: if (post.statusEnum == PostStatus.RESOLVED) { ... }
+     */
+    val statusEnum: PostStatus
+        get() = PostStatus.fromString(status)
+    
+    /**
+     * Post'un çözülüp çözülmediğini kontrol eder
+     */
+    val isResolved: Boolean
+        get() = statusEnum == PostStatus.RESOLVED
+    
+    /**
+     * Post'un yeni olup olmadığını kontrol eder
+     */
+    val isNew: Boolean
+        get() = statusEnum == PostStatus.NEW
 }

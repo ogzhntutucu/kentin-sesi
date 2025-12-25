@@ -44,46 +44,69 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _loginState.value = AuthState.Loading
             val result = authRepository.loginUser(email, password)
-            result.onSuccess { authResult ->
-                _loginState.value = AuthState.Success(authResult)
-            }.onFailure { exception ->
-                _loginState.value = AuthState.Error(exception.message ?: "Giriş hatası")
+            
+            // Artık Resource<T> kullanıyoruz, Result<T> değil
+            when (result) {
+                is Resource.Success -> {
+                    result.data?.let { authResult ->
+                        _loginState.value = AuthState.Success(authResult)
+                    } ?: run {
+                        _loginState.value = AuthState.Error("Giriş başarılı ancak veri alınamadı")
+                    }
+                }
+                is Resource.Error -> {
+                    _loginState.value = AuthState.Error(result.message ?: "Giriş hatası")
+                }
+                is Resource.Loading -> {
+                    // Zaten Loading durumundayız
+                }
             }
         }
     }
 
-    // KAYIT OL (Düzeltildi: İsim parametresi kalktı ve Resource tipi düzeltildi)
+    // KAYIT OL
     fun registerUser(email: String, password: String) {
         viewModelScope.launch {
             _registrationState.value = AuthState.Loading
 
-            // 1. Auth İşlemi (Hala Result dönüyor)
+            // 1. Auth İşlemi (Artık Resource dönüyor)
             val authResult = authRepository.registerUser(email, password)
 
-            authResult.onSuccess { result ->
-                val user = result.user
-                if (user != null) {
-                    // 2. Profil Oluşturma (Artık Resource dönüyor)
-                    // İsmi şimdilik boş ("") gönderiyoruz.
-                    val profileResource = userRepository.createUserProfile(user.uid, "", email)
+            when (authResult) {
+                is Resource.Success -> {
+                    val authData = authResult.data
+                    val user = authData?.user
+                    
+                    if (user != null) {
+                        // 2. Profil Oluşturma
+                        val profileResource = userRepository.createUserProfile(user.uid, "", email)
 
-                    // Resource kontrolü (onSuccess yerine when kullanıyoruz)
-                    when (profileResource) {
-                        is Resource.Success -> {
-                            _registrationState.value = AuthState.Success(result)
+                        when (profileResource) {
+                            is Resource.Success -> {
+                                // AuthResult'ı geri döndürmek için authData'yı kullan
+                                authData?.let {
+                                    _registrationState.value = AuthState.Success(it)
+                                } ?: run {
+                                    _registrationState.value = AuthState.Error("Kayıt başarılı ancak veri alınamadı")
+                                }
+                            }
+                            is Resource.Error -> {
+                                _registrationState.value = AuthState.Error(profileResource.message ?: "Profil hatası")
+                            }
+                            is Resource.Loading -> {
+                                // Loading durumu zaten başta set edildi
+                            }
                         }
-                        is Resource.Error -> {
-                            _registrationState.value = AuthState.Error(profileResource.message ?: "Profil hatası")
-                        }
-                        is Resource.Loading -> {
-                            // Loading durumu zaten başta set edildi
-                        }
+                    } else {
+                        _registrationState.value = AuthState.Error("Kullanıcı verisi alınamadı.")
                     }
-                } else {
-                    _registrationState.value = AuthState.Error("Kullanıcı verisi alınamadı.")
                 }
-            }.onFailure { exception ->
-                _registrationState.value = AuthState.Error(exception.message ?: "Kayıt hatası")
+                is Resource.Error -> {
+                    _registrationState.value = AuthState.Error(authResult.message ?: "Kayıt hatası")
+                }
+                is Resource.Loading -> {
+                    // Zaten Loading durumundayız
+                }
             }
         }
     }
