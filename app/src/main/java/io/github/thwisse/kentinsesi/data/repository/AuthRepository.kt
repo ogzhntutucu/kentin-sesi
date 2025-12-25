@@ -17,4 +17,6 @@ interface AuthRepository {
 
     // Çıkış yapma
     fun logout()
+
+    fun signOut()
 }

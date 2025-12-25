@@ -183,4 +183,21 @@ class PostRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getUserPosts(userId: String): Resource<List<Post>> {
+        return try {
+            val snapshot = firestore.collection("posts")
+                .whereEqualTo("authorId", userId)
+                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            val postList = snapshot.documents.map { doc ->
+                val post = doc.toObject(Post::class.java)!!
+                post.copy(id = doc.id)
+            }
+            Resource.Success(postList)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Veriler alınamadı.")
+        }
+    }
 }

@@ -34,7 +34,11 @@
         android:id="@+id/nav_profile"
         android:name="io.github.thwisse.kentinsesi.ui.profile.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_nav_profile_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+    </fragment>
     <fragment
         android:id="@+id/createPostFragment"
         android:name="io.github.thwisse.kentinsesi.ui.post.CreatePostFragment"
