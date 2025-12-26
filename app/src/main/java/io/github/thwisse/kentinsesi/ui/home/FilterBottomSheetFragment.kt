@@ -120,8 +120,10 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         
         val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
+            .setCancelable(true)
             .create()
         
+        // Dialog genişliğini ayarla
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -129,28 +131,40 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
         dialogBinding.tvDialogTitle.text = title
 
-        // Adapter oluştur - "Tümü" seçeneği yok, sadece normal seçenekler
-        val filterItems = items.map { item -> FilterItem(item, item, selectedItems.contains(item)) }
+        // Başlangıç seçimlerini hazırla
+        val initialSelectedItems = selectedItems.toMutableSet()
         
-        // Adapter için callback fonksiyonu - adapter oluşturulduktan sonra set edilecek
-        var onItemSelectedCallback: ((FilterItem) -> Unit)? = null
-        
-        // Adapter'ı oluştur
-        val adapter = FilterCheckboxAdapter { item ->
-            onItemSelectedCallback?.invoke(item)
+        // Adapter için filter items oluştur
+        val filterItems = items.map { item -> 
+            FilterItem(
+                label = item,
+                value = item,
+                isSelected = initialSelectedItems.contains(item)
+            )
         }
         
         // "Tümünü Seç" butonu metnini güncelleme fonksiyonu
-        fun updateSelectAllButton() {
+        fun updateSelectAllButton(adapter: FilterCheckboxAdapter, binding: DialogFilterOptionsBinding, totalCount: Int) {
             val selectedCount = adapter.getSelectedItems().size
-            val allSelected = selectedCount == items.size
-            dialogBinding.btnSelectAll.text = if (allSelected) "Tümünü Kaldır" else "Tümünü Seç"
+            val allSelected = selectedCount == totalCount
+            binding.btnSelectAll.text = if (allSelected) "Tümünü Kaldır" else "Tümünü Seç"
         }
         
-        // Callback'i set et
-        onItemSelectedCallback = { item ->
-            adapter.updateSelection(item)
-            updateSelectAllButton()
+        // Adapter'ı lateinit var olarak tanımla (callback içinde kullanmak için)
+        lateinit var adapter: FilterCheckboxAdapter
+        
+        // Adapter'ı oluştur
+        adapter = FilterCheckboxAdapter { updatedItem ->
+            // Seçim değiştiğinde adapter'ı güncelle
+            val updatedList = adapter.currentList.map { filterItem ->
+                if (filterItem.value == updatedItem.value) {
+                    updatedItem
+                } else {
+                    filterItem
+                }
+            }
+            adapter.submitList(updatedList)
+            updateSelectAllButton(adapter, dialogBinding, items.size)
         }
         
         dialogBinding.rvFilterOptions.apply {
@@ -158,37 +172,55 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             layoutManager = LinearLayoutManager(requireContext())
             // RecyclerView'ın görünür olduğundan emin ol
             visibility = View.VISIBLE
+            // RecyclerView'ın boyutunu içeriğe göre ayarla
+            setHasFixedSize(false)
         }
         
         // Adapter'a veriyi yükle
         adapter.submitList(filterItems)
         
-        // İlk yüklemede buton metnini güncelle
-        updateSelectAllButton()
+        // Debug: Adapter'ın item sayısını kontrol et
+        if (filterItems.isEmpty()) {
+            android.util.Log.w("FilterBottomSheet", "Filter items listesi boş!")
+        } else {
+            android.util.Log.d("FilterBottomSheet", "Filter items sayısı: ${filterItems.size}")
+        }
         
+        // İlk yüklemede buton metnini güncelle
+        updateSelectAllButton(adapter, dialogBinding, items.size)
+        
+        // "Tümünü Seç" butonu
         dialogBinding.btnSelectAll.setOnClickListener {
-            val allSelected = adapter.getSelectedItems().size == items.size
+            val selectedCount = adapter.getSelectedItems().size
+            val allSelected = selectedCount == items.size
+            
+            // Tümünü seç veya kaldır
             val updatedList = adapter.currentList.map { filterItem ->
                 filterItem.copy(isSelected = !allSelected)
             }
             adapter.submitList(updatedList)
-            updateSelectAllButton()
+            updateSelectAllButton(adapter, dialogBinding, items.size)
         }
 
+        // İptal butonu
         dialogBinding.btnCancel.setOnClickListener {
             dialog.dismiss()
         }
 
+        // Kaydet butonu
         dialogBinding.btnSave.setOnClickListener {
             val selected = adapter.getSelectedItems()
                 .mapNotNull { it.value }
                 .toSet()
+            
             // Eğer tümü seçiliyse boş set gönder (tümü = filtre yok)
+            // Aksi halde seçilenleri gönder
             val finalSelected = if (selected.size == items.size) {
                 emptySet<String>()
             } else {
                 selected
             }
+            
             onSave(finalSelected)
             dialog.dismiss()
         }
@@ -198,22 +230,18 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun updateFilterSummaries() {
         // İlçe özeti
-        binding.tvDistrictSummary.text = when {
-            selectedDistricts.isEmpty() -> "Tümü"
-            selectedDistricts.size == districts.size -> "Tümü"
-            selectedDistricts.size == 1 -> selectedDistricts.first()
-            else -> "${selectedDistricts.size} seçenek"
-        }
+        binding.tvDistrictSummary.text = getFilterSummary(
+            selectedItems = selectedDistricts,
+            totalItems = districts.size
+        )
 
         // Kategori özeti
-        binding.tvCategorySummary.text = when {
-            selectedCategories.isEmpty() -> "Tümü"
-            selectedCategories.size == categories.size -> "Tümü"
-            selectedCategories.size == 1 -> selectedCategories.first()
-            else -> "${selectedCategories.size} seçenek"
-        }
+        binding.tvCategorySummary.text = getFilterSummary(
+            selectedItems = selectedCategories,
+            totalItems = categories.size
+        )
 
-        // Durum özeti
+        // Durum özeti - Önce key'leri display name'e çevir
         val selectedStatusDisplay: List<String> = selectedStatuses.mapNotNull { statusKey ->
             statusLabels[statusKey]
         }
@@ -222,6 +250,21 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             selectedStatuses.size == statusLabels.size -> "Tümü"
             selectedStatuses.size == 1 -> selectedStatusDisplay.firstOrNull() ?: "Tümü"
             else -> "${selectedStatuses.size} seçenek"
+        }
+    }
+    
+    /**
+     * Filtre özeti metnini oluşturur
+     * - Boş veya tümü seçiliyse: "Tümü"
+     * - Tek seçim varsa: Seçilen item'ın adı
+     * - Birden fazla seçim varsa: "X seçenek"
+     */
+    private fun getFilterSummary(selectedItems: Set<String>, totalItems: Int): String {
+        return when {
+            selectedItems.isEmpty() -> "Tümü"
+            selectedItems.size == totalItems -> "Tümü"
+            selectedItems.size == 1 -> selectedItems.first()
+            else -> "${selectedItems.size} seçenek"
         }
     }
 

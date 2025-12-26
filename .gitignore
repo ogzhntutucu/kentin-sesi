@@ -359,3 +359,4 @@ obj/
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/android,androidstudio,kotlin,java,windows,linux,intellij
+/.kotlin/sessions/kotlin-compiler-1252443316241940530.salive

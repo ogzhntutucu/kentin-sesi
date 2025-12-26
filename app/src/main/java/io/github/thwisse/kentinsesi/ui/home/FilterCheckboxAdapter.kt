@@ -33,7 +33,7 @@ class FilterCheckboxAdapter(
     fun updateSelection(item: FilterItem) {
         val updatedList = currentList.map { filterItem ->
             if (filterItem.value == item.value) {
-                item // Güncellenmiş item'i kullan
+                item.copy(isSelected = item.isSelected) // Güncellenmiş item'i kullan
             } else {
                 filterItem
             }
@@ -52,17 +52,21 @@ class FilterCheckboxAdapter(
 
         fun bind(item: FilterItem) {
             binding.tvFilterText.text = item.label
-            // Listener'ı geçici olarak kaldır, sonra tekrar ekle
+            
+            // Listener'ı geçici olarak kaldır, checkbox durumunu set et, sonra tekrar ekle
             binding.cbFilter.setOnCheckedChangeListener(null)
             binding.cbFilter.isChecked = item.isSelected
-
+            
+            // Checkbox değiştiğinde callback'i çağır
             binding.cbFilter.setOnCheckedChangeListener { _, isChecked ->
+                // Sadece gerçekten değiştiyse callback çağır
                 if (item.isSelected != isChecked) {
                     val updatedItem = item.copy(isSelected = isChecked)
                     onSelectionChanged(updatedItem)
                 }
             }
 
+            // Tüm satıra tıklandığında checkbox'ı toggle et
             binding.root.setOnClickListener {
                 binding.cbFilter.toggle()
             }
