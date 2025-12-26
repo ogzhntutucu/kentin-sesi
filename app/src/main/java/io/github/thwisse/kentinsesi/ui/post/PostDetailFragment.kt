@@ -35,9 +35,25 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     private var currentPostId: String? = null
     private var currentPost: Post? = null
 
+    private var isRefreshingPost: Boolean = false
+    private var isRefreshingComments: Boolean = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPostDetailBinding.bind(view)
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            val postId = currentPostId
+            if (postId != null) {
+                binding.swipeRefreshLayout.isRefreshing = true
+                isRefreshingPost = true
+                isRefreshingComments = true
+                viewModel.loadPostById(postId)
+                viewModel.getComments(postId)
+            } else {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+        }
 
         // State restore stratejisi:
         // 1. ViewModel'den dene (eğer ViewModel hala varsa - process death olmadıysa)
@@ -68,7 +84,51 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             }
         }
 
+        observePostLoadState()
+        observeToggleUpvoteState()
         observeOwnerActions()
+    }
+
+    private fun observePostLoadState() {
+        viewModel.postLoadState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    if (isRefreshingPost) {
+                        isRefreshingPost = false
+                        if (!isRefreshingComments) {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    if (isRefreshingPost) {
+                        isRefreshingPost = false
+                        if (!isRefreshingComments) {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                        }
+                    }
+                }
+                is Resource.Loading -> {
+                    // no-op
+                }
+            }
+        }
+    }
+
+    private fun observeToggleUpvoteState() {
+        viewModel.toggleUpvoteState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Error -> {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    // Optimistic güncelleme yaptıysak server state'e dönmek için yeniden çek
+                    currentPostId?.let { viewModel.loadPostById(it) }
+                }
+                else -> {
+                    // no-op
+                }
+            }
+        }
     }
     
     /**
@@ -108,6 +168,13 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                     // Post zaten yüklü, sadece güncelle (status değişikliği gibi)
                     currentPost = it
                     setupViews(it)
+                }
+
+                if (isRefreshingPost) {
+                    isRefreshingPost = false
+                    if (!isRefreshingComments) {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                    }
                 }
             }
         }
@@ -253,9 +320,49 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             tvDetailTitle.text = post.title
             tvDetailDescription.text = post.description
             tvDetailCategory.text = post.category
-            tvDetailDistrict.text = post.district ?: "İlçe Yok"
+            tvDetailDistrict.text = "Hatay, ${post.district ?: "-"}"
+
+            tvDetailStatus.text = when (post.statusEnum) {
+                PostStatus.NEW -> "Yeni"
+                PostStatus.IN_PROGRESS -> "İşlemde"
+                PostStatus.RESOLVED -> "Çözüldü"
+                PostStatus.REJECTED -> "Reddedildi"
+            }
+
+            tvDetailUpvoteCount.text = "${post.upvoteCount} Destek"
             ivDetailImage.load(post.imageUrl) { crossfade(true) }
         }
+
+        binding.btnDetailUpvote.setOnClickListener {
+            val postId = currentPostId ?: return@setOnClickListener
+            val userId = viewModel.currentUserId ?: return@setOnClickListener
+
+            // Optimistic UI: anında sayıyı değiştir ve buton metnini güncelle
+            val latest = currentPost ?: post
+            val alreadyUpvoted = latest.upvotedBy.contains(userId)
+
+            val newCount = (latest.upvoteCount + if (alreadyUpvoted) -1 else 1).coerceAtLeast(0)
+            val newUpvotedBy = if (alreadyUpvoted) {
+                latest.upvotedBy.filterNot { it == userId }
+            } else {
+                latest.upvotedBy + userId
+            }
+
+            val optimisticPost = latest.copy(
+                upvoteCount = newCount,
+                upvotedBy = newUpvotedBy
+            )
+
+            currentPost = optimisticPost
+            setupViews(optimisticPost)
+
+            viewModel.toggleUpvote(postId)
+        }
+
+        // Buton metni: desteklediyse geri çek, değilse destekle
+        val userId = viewModel.currentUserId
+        val isUpvotedByMe = userId != null && post.upvotedBy.contains(userId)
+        binding.btnDetailUpvote.text = if (isUpvotedByMe) "Desteği Geri Çek" else "Destekle"
     }
 
     // ... setupMap, setupComments, onMapReady ve onDestroyView AYNI KALIYOR ...
@@ -305,8 +412,24 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
         viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
-                is Resource.Success -> commentAdapter.submitList(resource.data)
-                is Resource.Error -> Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                is Resource.Success -> {
+                    commentAdapter.submitList(resource.data)
+                    if (isRefreshingComments) {
+                        isRefreshingComments = false
+                        if (!isRefreshingPost) {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    if (isRefreshingComments) {
+                        isRefreshingComments = false
+                        if (!isRefreshingPost) {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                        }
+                    }
+                }
                 is Resource.Loading -> { }
             }
         }

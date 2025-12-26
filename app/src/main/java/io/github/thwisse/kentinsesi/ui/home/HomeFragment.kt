@@ -106,13 +106,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        val currentUserId = viewModel.currentUserId
-
         postAdapter = PostAdapter(
-            currentUserId = currentUserId,
-            onUpvoteClick = { clickedPost ->
-                viewModel.toggleUpvote(clickedPost)
-            },
             onItemClick = { clickedPost ->
                 // Karta tıklandı -> Detay sayfasına git (sadece post ID gönder)
                 val bundle = android.os.Bundle().apply {

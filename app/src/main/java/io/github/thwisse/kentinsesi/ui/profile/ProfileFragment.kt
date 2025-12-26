@@ -159,11 +159,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun setupRecyclerView() {
-        val currentUserId = viewModel.currentUser?.uid ?: ""
-
         postAdapter = PostAdapter(
-            currentUserId = currentUserId,
-            onUpvoteClick = { /* Profilde beğeni işlemi opsiyonel */ },
             onItemClick = { post ->
                 // Karta tıklayınca Detay'a git (sadece post ID gönder)
                 val bundle = Bundle().apply { putString("postId", post.id) }

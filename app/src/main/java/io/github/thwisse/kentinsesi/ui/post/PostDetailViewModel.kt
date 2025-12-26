@@ -39,6 +39,12 @@ class PostDetailViewModel @Inject constructor(
     // Post bilgisi ve kullanıcı bilgisi
     private val _currentPost = MutableLiveData<Post?>()
     val currentPost: LiveData<Post?> = _currentPost
+
+    private val _postLoadState = MutableLiveData<Resource<Post>>()
+    val postLoadState: LiveData<Resource<Post>> = _postLoadState
+
+    private val _toggleUpvoteState = MutableLiveData<Resource<Unit>>()
+    val toggleUpvoteState: LiveData<Resource<Unit>> = _toggleUpvoteState
     
     private val _currentUser = MutableLiveData<io.github.thwisse.kentinsesi.data.model.User?>()
     val currentUser: LiveData<io.github.thwisse.kentinsesi.data.model.User?> = _currentUser
@@ -105,21 +111,20 @@ class PostDetailViewModel @Inject constructor(
      */
     fun loadPostById(postId: String) {
         viewModelScope.launch {
-            _currentPost.value?.let { 
-                // Zaten yüklüyse tekrar yükleme
-                if (it.id == postId) return@launch
-            }
-            
+            _postLoadState.value = Resource.Loading()
+
             val result = postRepository.getPostById(postId)
             when (result) {
                 is Resource.Success -> {
                     result.data?.let { post ->
                         _currentPost.value = post
                         loadCurrentUser()
+                        _postLoadState.value = Resource.Success(post)
                     }
                 }
                 is Resource.Error -> {
                     // Hata durumunda bir şey yapma, Fragment handle edecek
+                    _postLoadState.value = Resource.Error(result.message ?: "Post yüklenemedi")
                 }
                 is Resource.Loading -> {
                     // Loading durumu
@@ -132,6 +137,16 @@ class PostDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _commentsState.value = Resource.Loading()
             _commentsState.value = postRepository.getComments(postId)
+        }
+    }
+
+    fun toggleUpvote(postId: String) {
+        val userId = currentUserId ?: return
+        viewModelScope.launch {
+            _toggleUpvoteState.value = Resource.Loading()
+            val result = postRepository.toggleUpvote(postId, userId)
+            _toggleUpvoteState.value = result
+            if (result is Resource.Success) loadPostById(postId)
         }
     }
 

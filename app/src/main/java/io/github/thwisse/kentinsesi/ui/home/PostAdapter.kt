@@ -6,13 +6,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import io.github.thwisse.kentinsesi.R // R sınıfını import etmeyi unutma
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.databinding.ItemPostBinding
 
 class PostAdapter(
-    private val currentUserId: String, // YENİ: Kullanıcı ID'si
-    private val onUpvoteClick: (Post) -> Unit, // YENİ: Tıklama Fonksiyonu,
     private val onItemClick: (Post) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
@@ -33,6 +30,8 @@ class PostAdapter(
                 tvCategory.text = post.category
                 tvUpvoteCount.text = "${post.upvoteCount} Destek"
 
+                tvLocation.text = "Hatay, ${post.district ?: "-"}"
+
                 // Durum metni
                 tvStatus.text = when(post.status) {
                     "new" -> "Yeni"
@@ -46,34 +45,6 @@ class PostAdapter(
                     crossfade(true)
                     placeholder(android.R.drawable.progress_indeterminate_horizontal)
                 }
-
-                // --- OYLAMA MANTIĞI (YENİ) ---
-
-                // 1. Kullanıcı bu postu daha önce beğenmiş mi?
-                val isUpvotedByMe = post.upvotedBy.contains(currentUserId)
-
-                // 2. İkonu buna göre ayarla
-                if (isUpvotedByMe) {
-                    // Dolu kalp (Kırmızı)
-                    ivUpvote.setImageResource(R.drawable.ic_heart_filled)
-                    // İstersen rengini buradan da verebilirsin ama drawable daha temizdir
-                } else {
-                    // Boş kalp (Çerçeve)
-                    ivUpvote.setImageResource(R.drawable.ic_heart_outlined)
-                }
-
-                // 3. Tıklanınca Fragment'a haber ver
-                ivUpvote.setOnClickListener {
-                    onUpvoteClick(post)
-                }
-                // Upvote butonunun click'ini root view'dan ayır
-                ivUpvote.isClickable = true
-                ivUpvote.isFocusable = true
-                // Upvote butonunun parent'ına da click listener ekle (root view'ın click'ini engellemek için)
-                (ivUpvote.parent as? android.view.View)?.setOnClickListener {
-                    // Boş bırak, sadece root view'ın click'ini engellemek için
-                }
-                // -----------------------------
             }
 
             // Karta (Root View) tıklayınca detay aç

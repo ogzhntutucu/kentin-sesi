@@ -6,15 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".ui.post.PostDetailFragment">
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@id/inputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,6 +74,36 @@
                         android:gravity="center_vertical"
                         android:textColor="#666"
                         tools:text="İskenderun" />
+
+                    <TextView
+                        android:id="@+id/tvDetailStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:gravity="center_vertical"
+                        android:textColor="#666"
+                        tools:text="Yeni" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvDetailUpvoteCount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textStyle="bold"
+                        tools:text="12 Destek" />
+
+                    <Button
+                        android:id="@+id/btnDetailUpvote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Destekle" />
                 </LinearLayout>
 
                 <TextView
@@ -134,7 +169,8 @@
 
             </LinearLayout>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <LinearLayout
         android:id="@+id/inputLayout"
