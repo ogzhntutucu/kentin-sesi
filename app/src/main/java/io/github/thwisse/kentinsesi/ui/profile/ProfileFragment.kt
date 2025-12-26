@@ -1,11 +1,20 @@
 package io.github.thwisse.kentinsesi.ui.profile
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.R
@@ -27,19 +36,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
 
+        setupMenu()
+
         setupUserInfo()
         setupRecyclerView()
         setupSwipeRefresh()
         setupObservers()
-
-        // Çıkış Butonu
-        binding.btnLogout.setOnClickListener {
-            viewModel.signOut()
-            // Auth ekranına at ve Activity geçmişini temizle
-            val intent = Intent(requireContext(), AuthActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
-        }
 
         // Admin Paneli Butonu (sadece admin kullanıcılar görebilir)
         viewModel.userProfile.observe(viewLifecycleOwner) { resource ->
@@ -56,6 +58,63 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         binding.btnAdminPanel.setOnClickListener {
             findNavController().navigate(R.id.action_nav_profile_to_adminPanelFragment)
         }
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_profile, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_theme -> {
+                        showThemeDialog()
+                        true
+                    }
+                    R.id.action_logout -> {
+                        doLogout()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showThemeDialog() {
+        val prefs = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val current = prefs.getString("theme_mode", "system")
+
+        val options = arrayOf("Sistem", "Açık", "Koyu")
+        val values = arrayOf("system", "light", "dark")
+        val checkedIndex = values.indexOf(current).takeIf { it >= 0 } ?: 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Tema")
+            .setSingleChoiceItems(options, checkedIndex) { dialog, which ->
+                val selected = values.getOrNull(which) ?: "system"
+                prefs.edit().putString("theme_mode", selected).apply()
+
+                when (selected) {
+                    "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                }
+
+                requireActivity().recreate()
+                dialog.dismiss()
+            }
+            .setNegativeButton("İptal") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun doLogout() {
+        viewModel.signOut()
+        val intent = Intent(requireContext(), AuthActivity::class.java)
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun setupUserInfo() {
