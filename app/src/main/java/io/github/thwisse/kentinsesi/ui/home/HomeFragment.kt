@@ -12,8 +12,8 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,7 +70,7 @@ class HomeFragment : Fragment() {
     }
 
     // ViewModel ve Adapter tanımları
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: HomeViewModel by activityViewModels()
     private lateinit var postAdapter: PostAdapter // <-- BUNU EKLE
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

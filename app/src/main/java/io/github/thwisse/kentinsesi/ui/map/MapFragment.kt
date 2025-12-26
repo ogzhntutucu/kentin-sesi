@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.databinding.FragmentMapBinding
+import io.github.thwisse.kentinsesi.ui.home.HomeViewModel
 import io.github.thwisse.kentinsesi.util.Resource
 
 @AndroidEntryPoint
@@ -25,8 +26,10 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: MapViewModel by viewModels()
+    private val viewModel: HomeViewModel by activityViewModels()
     private var googleMap: GoogleMap? = null
+
+    private var latestPosts: List<Post> = emptyList()
 
     // Marker ile Post'u eşleştirmek için bir harita (Map) tutuyoruz
     private val markerPostMap = HashMap<Marker, Post>()
@@ -34,6 +37,9 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentMapBinding.bind(view)
+
+        // Paylaşılan post state'ini erken dinle (harita hazır olmasa bile listeyi cache'le)
+        observePosts()
 
         // Haritayı Başlat
         val mapFragment = childFragmentManager.findFragmentById(R.id.googleMap) as SupportMapFragment
@@ -50,8 +56,8 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
         val startLocation = LatLng(36.58, 36.17)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 12f))
 
-        // Harita hazır olunca verileri çekmeye başla (veya observe et)
-        observePosts()
+        // Harita hazır olduğunda en güncel listeyi bas
+        addMarkers(latestPosts)
     }
 
     private fun observePosts() {
@@ -59,7 +65,10 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
             when(resource) {
                 is Resource.Success -> {
                     val posts = resource.data ?: emptyList()
-                    addMarkers(posts)
+                    latestPosts = posts
+                    if (googleMap != null) {
+                        addMarkers(posts)
+                    }
                 }
                 is Resource.Error -> {
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
