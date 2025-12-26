@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Filter
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -234,14 +235,33 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
     private fun setupDistrictSpinner() {
         val districts = listOf("Altınözü", "Antakya", "Arsuz", "Belen", "Defne", "Dörtyol", "Erzin", "Hassa", "İskenderun", "Kırıkhan", "Kumlu", "Payas", "Reyhanlı", "Samandağ", "Yayladağı")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, districts)
+        val adapter = createNoFilterAdapter(districts)
         binding.actvDistrict.setAdapter(adapter)
     }
 
     private fun setupCategorySpinner() {
         val categories = listOf("Altyapı", "Ulaşım", "Çevre", "Aydınlatma", "Park/Bahçe", "Sokak Hayvanları", "Diğer")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, categories)
+        val adapter = createNoFilterAdapter(categories)
         binding.actvCategory.setAdapter(adapter)
+    }
+
+    private fun createNoFilterAdapter(items: List<String>): ArrayAdapter<String> {
+        return object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, items) {
+            override fun getFilter(): Filter {
+                return object : Filter() {
+                    override fun performFiltering(constraint: CharSequence?): FilterResults {
+                        return FilterResults().apply {
+                            values = items
+                            count = items.size
+                        }
+                    }
+
+                    override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                        // no-op: filtering disabled
+                    }
+                }
+            }
+        }
     }
 
     private fun observeViewModel() {
