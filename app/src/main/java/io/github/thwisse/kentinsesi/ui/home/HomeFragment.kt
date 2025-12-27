@@ -77,6 +77,7 @@ class HomeFragment : Fragment() {
                             viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
                             viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
                             viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
+                            putBoolean("onlyMyPosts", viewModel.lastOnlyMyPosts)
                         }
                         findNavController().navigate(R.id.action_homeFragment_to_filterBottomSheetFragment, bundle)
                     }
@@ -103,12 +104,14 @@ class HomeFragment : Fragment() {
             val districts = bundle.getStringArrayList("districts")
             val categories = bundle.getStringArrayList("categories")
             val statuses = bundle.getStringArrayList("statuses")
+            val onlyMyPosts = bundle.getBoolean("onlyMyPosts", false)
 
             // Listeyi temizle (opsiyonel görsel iyileştirme) veya direkt yüklemeye geç
             viewModel.getPosts(
                 districts = districts?.toList(),
                 categories = categories?.toList(),
-                statuses = statuses?.toList()
+                statuses = statuses?.toList(),
+                onlyMyPosts = onlyMyPosts
             )
 
             // Kullanıcıya bilgi ver

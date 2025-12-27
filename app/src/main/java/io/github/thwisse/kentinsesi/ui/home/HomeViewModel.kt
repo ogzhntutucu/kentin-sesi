@@ -41,6 +41,9 @@ class HomeViewModel @Inject constructor(
     var lastStatuses: List<String>? = null
         private set
 
+    var lastOnlyMyPosts: Boolean = false
+        private set
+
     init {
         viewModelScope.launch {
             filterRepository.ensureSystemDefaultExists()
@@ -62,12 +65,14 @@ class HomeViewModel @Inject constructor(
     fun getPosts(
         districts: List<String>? = null,
         categories: List<String>? = null,
-        statuses: List<String>? = null
+        statuses: List<String>? = null,
+        onlyMyPosts: Boolean = false
     ) {
         val criteria = FilterCriteria(
             districts = districts.orEmpty(),
             categories = categories.orEmpty(),
-            statuses = statuses.orEmpty()
+            statuses = statuses.orEmpty(),
+            onlyMyPosts = onlyMyPosts
         )
 
         viewModelScope.launch {
@@ -124,15 +129,23 @@ class HomeViewModel @Inject constructor(
         lastDistricts = criteria.districts.takeIf { it.isNotEmpty() }
         lastCategories = criteria.categories.takeIf { it.isNotEmpty() }
         lastStatuses = criteria.statuses.takeIf { it.isNotEmpty() }
+        lastOnlyMyPosts = criteria.onlyMyPosts
 
         _postsState.value = Resource.Loading()
         val result = postRepository.getPosts(lastDistricts, lastCategories, lastStatuses)
-        _postsState.value = result
+
+        if (result is Resource.Success && lastOnlyMyPosts) {
+            val userId = currentUserId
+            val filtered = result.data.orEmpty().filter { it.authorId == userId }
+            _postsState.value = Resource.Success(filtered)
+        } else {
+            _postsState.value = result
+        }
     }
 
     // Mevcut filtrelerle yenileme yap
     fun refreshPosts() {
-        getPosts(lastDistricts, lastCategories, lastStatuses)
+        getPosts(lastDistricts, lastCategories, lastStatuses, lastOnlyMyPosts)
     }
 
     // Beğeni (Upvote) Fonksiyonu

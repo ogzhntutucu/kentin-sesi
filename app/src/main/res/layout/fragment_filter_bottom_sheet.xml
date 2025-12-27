@@ -57,6 +57,16 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <CheckBox
+        android:id="@+id/cbOnlyMyPosts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Sadece benim paylaşımlarım"
+        app:layout_constraintTop_toBottomOf="@id/cvStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cvCategory"
         android:layout_width="match_parent"
@@ -145,7 +155,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/cvStatus"
+        app:layout_constraintTop_toBottomOf="@id/cbOnlyMyPosts"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button

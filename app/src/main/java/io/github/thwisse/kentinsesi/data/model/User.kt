@@ -1,5 +1,6 @@
 package io.github.thwisse.kentinsesi.data.model
 
+import com.google.firebase.firestore.Exclude
 import io.github.thwisse.kentinsesi.util.Constants
 
 /**
@@ -26,18 +27,21 @@ data class User(
      * Role'u enum olarak döndürür - Kod içinde kullanım için
      * Örnek: if (user.roleEnum == UserRole.OFFICIAL) { ... }
      */
+    @get:Exclude
     val roleEnum: UserRole
         get() = UserRole.fromString(role)
     
     /**
      * Kullanıcının yetkili olup olmadığını kontrol eder
      */
+    @get:Exclude
     val isOfficial: Boolean
         get() = roleEnum == UserRole.OFFICIAL || roleEnum == UserRole.ADMIN
     
     /**
      * Kullanıcının admin olup olmadığını kontrol eder
      */
+    @get:Exclude
     val isAdmin: Boolean
         get() = roleEnum == UserRole.ADMIN
 }

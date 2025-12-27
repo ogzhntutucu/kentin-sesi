@@ -37,13 +37,6 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
 
     private var latestPosts: List<Post> = emptyList()
 
-    private enum class MapDisplayScope {
-        ALL,
-        MINE
-    }
-
-    private var displayScope: MapDisplayScope = MapDisplayScope.ALL
-
     // Marker ile Post'u eşleştirmek için bir harita (Map) tutuyoruz
     private val markerPostMap = HashMap<Marker, Post>()
 
@@ -79,26 +72,6 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
                         showFilterChoiceDialog()
                         true
                     }
-                    R.id.action_all_posts -> {
-                        displayScope = MapDisplayScope.ALL
-                        if (googleMap != null) {
-                            addMarkers(latestPosts)
-                        }
-                        true
-                    }
-                    R.id.action_my_posts -> {
-                        val userId = viewModel.currentUserId
-                        if (userId.isBlank()) {
-                            Toast.makeText(requireContext(), "Kullanıcı oturumu bulunamadı", Toast.LENGTH_SHORT).show()
-                            return true
-                        }
-
-                        displayScope = MapDisplayScope.MINE
-                        if (googleMap != null) {
-                            addMarkers(latestPosts.filter { it.authorId == userId })
-                        }
-                        true
-                    }
                     else -> false
                 }
             }
@@ -120,6 +93,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
                             viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
                             viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
                             viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
+                            putBoolean("onlyMyPosts", viewModel.lastOnlyMyPosts)
                         }
                         findNavController().navigate(R.id.action_nav_map_to_filterBottomSheetFragment, bundle)
                     }
@@ -134,11 +108,13 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
             val districts = bundle.getStringArrayList("districts")
             val categories = bundle.getStringArrayList("categories")
             val statuses = bundle.getStringArrayList("statuses")
+            val onlyMyPosts = bundle.getBoolean("onlyMyPosts", false)
 
             viewModel.getPosts(
                 districts = districts?.toList(),
                 categories = categories?.toList(),
-                statuses = statuses?.toList()
+                statuses = statuses?.toList(),
+                onlyMyPosts = onlyMyPosts
             )
 
             Toast.makeText(requireContext(), "Filtreler uygulandı", Toast.LENGTH_SHORT).show()
@@ -155,14 +131,8 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
         val startLocation = LatLng(36.58, 36.17)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 12f))
 
-        // Harita hazır olduğunda bulunduğumuz scope'a göre marker bas (filtreler her zaman uygulanmış olur)
-        when (displayScope) {
-            MapDisplayScope.ALL -> addMarkers(latestPosts)
-            MapDisplayScope.MINE -> {
-                val userId = viewModel.currentUserId
-                addMarkers(latestPosts.filter { it.authorId == userId })
-            }
-        }
+        // Harita hazır olduğunda mevcut filtrelenmiş listeyi bas
+        addMarkers(latestPosts)
     }
 
     private fun observePosts() {
@@ -172,13 +142,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
                     val posts = resource.data ?: emptyList()
                     latestPosts = posts
                     if (googleMap != null) {
-                        when (displayScope) {
-                            MapDisplayScope.ALL -> addMarkers(posts)
-                            MapDisplayScope.MINE -> {
-                                val userId = viewModel.currentUserId
-                                addMarkers(posts.filter { it.authorId == userId })
-                            }
-                        }
+                        addMarkers(posts)
                     }
                 }
                 is Resource.Error -> {

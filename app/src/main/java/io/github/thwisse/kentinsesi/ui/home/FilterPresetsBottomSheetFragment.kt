@@ -50,10 +50,13 @@ class FilterPresetsBottomSheetFragment : BottomSheetDialogFragment() {
                 val statusDisplay = criteria.statuses
                     .map { statusLabels[it] ?: it }
 
+                val onlyMineDisplay = if (criteria.onlyMyPosts) "Evet" else "Hayır"
+
                 val message = buildString {
                     appendLine("İlçeler: ${criteria.districts.joinToString().ifBlank { "Tümü" }}")
                     appendLine("Kategoriler: ${criteria.categories.joinToString().ifBlank { "Tümü" }}")
                     appendLine("Durumlar: ${statusDisplay.joinToString().ifBlank { "Tümü" }}")
+                    appendLine("Sadece benim paylaşımlarım: $onlyMineDisplay")
                 }
 
                 MaterialAlertDialogBuilder(requireContext())

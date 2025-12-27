@@ -44,6 +44,7 @@ class FilterRepositoryImpl @Inject constructor(
                 districts = listOf("İskenderun"),
                 categories = emptyList(),
                 statuses = listOf("new", "in_progress"),
+                onlyMyPosts = false,
                 isSystemDefault = true,
                 isDefault = true
             )
@@ -66,6 +67,7 @@ class FilterRepositoryImpl @Inject constructor(
                 districts = criteria.districts,
                 categories = criteria.categories,
                 statuses = criteria.statuses,
+                onlyMyPosts = criteria.onlyMyPosts,
                 isSystemDefault = false,
                 isDefault = false
             )
@@ -152,7 +154,8 @@ class FilterRepositoryImpl @Inject constructor(
             criteria = FilterCriteria(
                 districts = districts,
                 categories = categories,
-                statuses = statuses
+                statuses = statuses,
+                onlyMyPosts = onlyMyPosts
             ),
             isSystemDefault = isSystemDefault,
             isDefault = isDefault

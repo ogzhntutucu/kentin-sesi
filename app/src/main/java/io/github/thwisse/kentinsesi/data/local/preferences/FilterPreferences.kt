@@ -25,6 +25,7 @@ class FilterPreferences @Inject constructor(
     private val LAST_DISTRICTS = stringSetPreferencesKey("last_filter_districts")
     private val LAST_CATEGORIES = stringSetPreferencesKey("last_filter_categories")
     private val LAST_STATUSES = stringSetPreferencesKey("last_filter_statuses")
+    private val LAST_ONLY_MY_POSTS = booleanPreferencesKey("last_filter_only_my_posts")
 
     val lastAppliedPresetId: Flow<String?> = context.filterDataStore.data
         .map { prefs: Preferences -> prefs[LAST_APPLIED_PRESET_ID] }
@@ -34,6 +35,7 @@ class FilterPreferences @Inject constructor(
             val districts = prefs[LAST_DISTRICTS]
             val categories = prefs[LAST_CATEGORIES]
             val statuses = prefs[LAST_STATUSES]
+            val onlyMyPosts = prefs[LAST_ONLY_MY_POSTS] ?: false
 
             if (districts == null && categories == null && statuses == null) {
                 null
@@ -41,7 +43,8 @@ class FilterPreferences @Inject constructor(
                 FilterCriteria(
                     districts = districts?.toList().orEmpty(),
                     categories = categories?.toList().orEmpty(),
-                    statuses = statuses?.toList().orEmpty()
+                    statuses = statuses?.toList().orEmpty(),
+                    onlyMyPosts = onlyMyPosts
                 )
             }
 
@@ -72,10 +75,12 @@ class FilterPreferences @Inject constructor(
                 prefs.remove(LAST_DISTRICTS)
                 prefs.remove(LAST_CATEGORIES)
                 prefs.remove(LAST_STATUSES)
+                prefs.remove(LAST_ONLY_MY_POSTS)
             } else {
                 prefs[LAST_DISTRICTS] = criteria.districts.toSet()
                 prefs[LAST_CATEGORIES] = criteria.categories.toSet()
                 prefs[LAST_STATUSES] = criteria.statuses.toSet()
+                prefs[LAST_ONLY_MY_POSTS] = criteria.onlyMyPosts
             }
         }
     }

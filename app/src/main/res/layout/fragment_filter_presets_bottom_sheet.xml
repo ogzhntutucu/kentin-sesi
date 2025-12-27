@@ -28,11 +28,20 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tvHint2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Filtreyi uygulamak için dokunun."
+        android:textColor="#666"
+        android:textSize="13sp" />
+
+    <TextView
         android:id="@+id/tvHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Filtre detaylarını görmek için basılı tutun"
+        android:text="Filtre detaylarını görmek için basılı tutun."
         android:textColor="#666"
         android:textSize="13sp" />
 

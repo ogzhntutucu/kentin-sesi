@@ -1,5 +1,6 @@
 package io.github.thwisse.kentinsesi.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import io.github.thwisse.kentinsesi.data.model.User
 import io.github.thwisse.kentinsesi.data.model.UserRole
@@ -24,6 +25,19 @@ class UserRepositoryImpl @Inject constructor(
             )
             // Constants kullanarak collection adını merkezileştirdik
             firestore.collection(Constants.COLLECTION_USERS).document(uid).set(newUser).await()
+
+            // Eski şemadan kalan gereksiz alanları temizle (varsa)
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(uid)
+                .update(
+                    mapOf(
+                        "admin" to FieldValue.delete(),
+                        "official" to FieldValue.delete(),
+                        "roleEnum" to FieldValue.delete()
+                    )
+                )
+                .await()
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Profil oluşturulamadı.")
@@ -42,6 +56,19 @@ class UserRepositoryImpl @Inject constructor(
             )
 
             firestore.collection(Constants.COLLECTION_USERS).document(uid).update(updates).await()
+
+            // Eski şemadan kalan gereksiz alanları temizle (varsa)
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(uid)
+                .update(
+                    mapOf(
+                        "admin" to FieldValue.delete(),
+                        "official" to FieldValue.delete(),
+                        "roleEnum" to FieldValue.delete()
+                    )
+                )
+                .await()
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Profil güncellenemedi.")

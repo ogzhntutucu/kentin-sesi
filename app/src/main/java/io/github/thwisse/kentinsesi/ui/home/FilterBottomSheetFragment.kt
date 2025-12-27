@@ -32,6 +32,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     private var selectedDistricts = mutableSetOf<String>()
     private var selectedCategories = mutableSetOf<String>()
     private var selectedStatuses = mutableSetOf<String>()
+    private var onlyMyPosts: Boolean = false
 
     // Filtre listeleri
     private val districts = listOf(
@@ -65,6 +66,10 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         updateFilterSummaries()
         setupClickListeners()
 
+        binding.cbOnlyMyPosts.setOnCheckedChangeListener { _, isChecked ->
+            onlyMyPosts = isChecked
+        }
+
         binding.btnApplyFilter.setOnClickListener {
             applyFilters()
         }
@@ -89,7 +94,8 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
                 val criteria = FilterCriteria(
                     districts = selectedDistricts.toList(),
                     categories = selectedCategories.toList(),
-                    statuses = selectedStatuses.toList()
+                    statuses = selectedStatuses.toList(),
+                    onlyMyPosts = onlyMyPosts
                 )
 
                 viewLifecycleOwner.lifecycleScope.launch {
@@ -328,6 +334,9 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         val statusesList = arguments?.getStringArrayList("statuses") ?: 
             arguments?.getString("status")?.let { listOf(it) }?.takeIf { it.isNotEmpty() } ?: emptyList()
 
+        onlyMyPosts = arguments?.getBoolean("onlyMyPosts", false) ?: false
+        binding.cbOnlyMyPosts.isChecked = onlyMyPosts
+
         selectedDistricts = districtsList.toMutableSet()
         selectedCategories = categoriesList.toMutableSet()
         selectedStatuses = statusesList.toMutableSet()
@@ -338,7 +347,8 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         setFragmentResult("filter_request", bundleOf(
             "districts" to ArrayList(selectedDistricts),
             "categories" to ArrayList(selectedCategories),
-            "statuses" to ArrayList(selectedStatuses)
+            "statuses" to ArrayList(selectedStatuses),
+            "onlyMyPosts" to onlyMyPosts
         ))
 
         dismiss() // Pencereyi kapat
