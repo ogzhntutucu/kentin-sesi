@@ -31,6 +31,16 @@ interface PostRepository {
 
     suspend fun addComment(postId: String, text: String): Resource<Unit>
 
+    suspend fun getThreadedComments(postId: String): Resource<List<io.github.thwisse.kentinsesi.data.model.Comment>>
+
+    suspend fun addReply(
+        postId: String,
+        text: String,
+        parentCommentId: String,
+        replyToAuthorId: String?,
+        replyToAuthorName: String?
+    ): Resource<Unit>
+
     suspend fun updatePostStatus(postId: String, newStatus: String): Resource<Unit>
     suspend fun deletePost(postId: String): Resource<Unit>
 

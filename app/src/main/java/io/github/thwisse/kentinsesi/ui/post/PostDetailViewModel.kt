@@ -30,6 +30,9 @@ class PostDetailViewModel @Inject constructor(
     private val _addCommentState = MutableLiveData<Resource<Unit>>()
     val addCommentState: LiveData<Resource<Unit>> = _addCommentState
 
+    private val _addReplyState = MutableLiveData<Resource<Unit>>()
+    val addReplyState: LiveData<Resource<Unit>> = _addReplyState
+
     private val _deletePostState = MutableLiveData<Resource<Unit>>()
     val deletePostState: LiveData<Resource<Unit>> = _deletePostState
 
@@ -136,7 +139,7 @@ class PostDetailViewModel @Inject constructor(
     fun getComments(postId: String) {
         viewModelScope.launch {
             _commentsState.value = Resource.Loading()
-            _commentsState.value = postRepository.getComments(postId)
+            _commentsState.value = postRepository.getThreadedComments(postId)
         }
     }
 
@@ -156,6 +159,28 @@ class PostDetailViewModel @Inject constructor(
             _addCommentState.value = Resource.Loading()
             val result = postRepository.addComment(postId, text)
             _addCommentState.value = result
+            if (result is Resource.Success) getComments(postId)
+        }
+    }
+
+    fun addReply(
+        postId: String,
+        text: String,
+        parentCommentId: String,
+        replyToAuthorId: String?,
+        replyToAuthorName: String?
+    ) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            _addReplyState.value = Resource.Loading()
+            val result = postRepository.addReply(
+                postId = postId,
+                text = text,
+                parentCommentId = parentCommentId,
+                replyToAuthorId = replyToAuthorId,
+                replyToAuthorName = replyToAuthorName
+            )
+            _addReplyState.value = result
             if (result is Resource.Success) getComments(postId)
         }
     }

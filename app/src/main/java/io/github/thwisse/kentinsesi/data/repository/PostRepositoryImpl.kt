@@ -2,6 +2,7 @@ package io.github.thwisse.kentinsesi.data.repository
 
 import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.storage.FirebaseStorage
@@ -226,8 +227,51 @@ class PostRepositoryImpl @Inject constructor(
                 .get()
                 .await()
 
-            val comments = snapshot.toObjects(Comment::class.java) // Artık hata vermez (Import eklendi)
+            val comments = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Comment::class.java)?.copy(id = doc.id)
+            }
             Resource.Success(comments)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Yorumlar alınamadı.")
+        }
+    }
+
+    override suspend fun getThreadedComments(postId: String): Resource<List<Comment>> {
+        return try {
+            val snapshot = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+                .collection(Constants.COLLECTION_COMMENTS)
+                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .get()
+                .await()
+
+            val all = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Comment::class.java)?.copy(id = doc.id)
+            }
+
+            val maxDepth = Constants.MAX_COMMENT_DEPTH
+
+            val topLevel = all.filter { it.parentCommentId.isNullOrBlank() || it.depth == 0 }
+            val childrenByParent = all
+                .filter { !it.parentCommentId.isNullOrBlank() && it.depth > 0 }
+                .groupBy { it.parentCommentId!! }
+
+            val flattened = mutableListOf<Comment>()
+            fun appendChildren(parent: Comment) {
+                val nextDepth = parent.depth + 1
+                if (nextDepth > maxDepth) return
+                val children = childrenByParent[parent.id].orEmpty()
+                for (child in children) {
+                    flattened.add(child)
+                    appendChildren(child)
+                }
+            }
+
+            for (c in topLevel) {
+                flattened.add(c)
+                appendChildren(c)
+            }
+
+            Resource.Success(flattened)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Yorumlar alınamadı.")
         }
@@ -255,6 +299,65 @@ class PostRepositoryImpl @Inject constructor(
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Yorum gönderilemedi.")
+        }
+    }
+
+    override suspend fun addReply(
+        postId: String,
+        text: String,
+        parentCommentId: String,
+        replyToAuthorId: String?,
+        replyToAuthorName: String?
+    ): Resource<Unit> {
+        return try {
+            val user = auth.currentUser ?: throw Exception("Oturum açılmamış.")
+            val authorName = user.displayName ?: user.email?.substringBefore("@") ?: "Anonim"
+
+            val commentsCol = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+                .collection(Constants.COLLECTION_COMMENTS)
+
+            val parentDoc = commentsCol.document(parentCommentId).get().await()
+            if (!parentDoc.exists()) {
+                return Resource.Error("Yanıtlanacak yorum bulunamadı")
+            }
+
+            val parent = parentDoc.toObject(Comment::class.java)?.copy(id = parentDoc.id)
+                ?: return Resource.Error("Yanıtlanacak yorum okunamadı")
+
+            if (parent.depth >= Constants.MAX_COMMENT_DEPTH) {
+                return Resource.Error("Maksimum yanıt derinliğine ulaşıldı")
+            }
+
+            val rootId = if (parent.depth == 0) {
+                parent.id
+            } else {
+                parent.rootCommentId ?: parent.id
+            }
+
+            val reply = Comment(
+                postId = postId,
+                authorId = user.uid,
+                authorName = authorName,
+                text = text,
+                parentCommentId = parent.id,
+                rootCommentId = rootId,
+                depth = parent.depth + 1,
+                replyToAuthorId = replyToAuthorId,
+                replyToAuthorName = replyToAuthorName
+            )
+
+            val rootRef = commentsCol.document(rootId)
+
+            firestore.runTransaction { tx ->
+                // reply write
+                tx.set(commentsCol.document(), reply)
+                // denormalized reply count on root comment
+                tx.update(rootRef, "replyCount", FieldValue.increment(1))
+            }.await()
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Yanıt gönderilemedi.")
         }
     }
 

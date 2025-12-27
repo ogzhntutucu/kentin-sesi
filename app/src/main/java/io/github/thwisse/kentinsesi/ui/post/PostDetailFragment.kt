@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.data.model.PostStatus
 import io.github.thwisse.kentinsesi.databinding.FragmentPostDetailBinding
+import io.github.thwisse.kentinsesi.data.model.Comment
 import io.github.thwisse.kentinsesi.util.Resource
 import io.github.thwisse.kentinsesi.util.ValidationUtils
 import androidx.core.view.isVisible
@@ -29,11 +30,17 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
     // ViewModel Tanımı
     private val viewModel: PostDetailViewModel by viewModels()
-    private val commentAdapter = CommentAdapter()
+    private val commentAdapter = CommentAdapter(
+        onReplyClick = { comment ->
+            enterReplyMode(comment)
+        }
+    )
 
     private var postLocation: LatLng? = null
     private var currentPostId: String? = null
     private var currentPost: Post? = null
+
+    private var replyingTo: Comment? = null
 
     private var isRefreshingPost: Boolean = false
     private var isRefreshingComments: Boolean = false
@@ -41,6 +48,10 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPostDetailBinding.bind(view)
+
+        binding.btnCancelReply.setOnClickListener {
+            exitReplyMode()
+        }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             val postId = currentPostId
@@ -87,6 +98,22 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         observePostLoadState()
         observeToggleUpvoteState()
         observeOwnerActions()
+    }
+
+    private fun enterReplyMode(comment: Comment) {
+        replyingTo = comment
+        binding.replyBanner.isVisible = true
+        val name = comment.authorName.ifBlank { "-" }
+        binding.tvReplyBannerText.text = "${name} kişisine yanıt"
+        binding.etComment.hint = "Yanıt yaz..."
+        binding.etComment.requestFocus()
+    }
+
+    private fun exitReplyMode() {
+        replyingTo = null
+        binding.replyBanner.isVisible = false
+        binding.tvReplyBannerText.text = ""
+        binding.etComment.hint = "Bir yorum yaz..."
     }
 
     private fun observePostLoadState() {
@@ -404,8 +431,21 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                     return@setOnClickListener
                 }
             }
-            
-            viewModel.addComment(currentPostId!!, text)
+
+            val postId = currentPostId!!
+            val replying = replyingTo
+            if (replying != null) {
+                viewModel.addReply(
+                    postId = postId,
+                    text = text,
+                    parentCommentId = replying.id,
+                    replyToAuthorId = replying.authorId,
+                    replyToAuthorName = replying.authorName
+                )
+            } else {
+                viewModel.addComment(postId, text)
+            }
+
             binding.etComment.text.clear()
             binding.etComment.error = null
         }
@@ -442,6 +482,19 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 }
                 is Resource.Success -> {
                     // Yorum başarıyla eklendi, yorumlar otomatik yenilenecek
+                }
+                is Resource.Loading -> { }
+            }
+        }
+
+        viewModel.addReplyState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Error -> {
+                    binding.etComment.error = resource.message
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Success -> {
+                    exitReplyMode()
                 }
                 is Resource.Loading -> { }
             }

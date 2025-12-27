@@ -77,8 +77,16 @@ service cloud.firestore {
                          isOwner(request.resource.data.authorId);
         
         // Güncelleme: Sadece yorum sahibi güncelleyebilir
-        allow update: if isAuthenticated() && 
-                         isOwner(resource.data.authorId);
+        allow update: if isAuthenticated() && (
+                         // Yorum sahibi kendi yorumunu güncelleyebilir
+                         isOwner(resource.data.authorId) ||
+                         // Reply atılınca root yorumun replyCount alanı +1 güncellenebilsin
+                         (
+                           resource.data.depth == 0 &&
+                           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['replyCount']) &&
+                           request.resource.data.replyCount == resource.data.replyCount + 1
+                         )
+                       );
         
         // Silme: Yorum sahibi veya admin silebilir
         allow delete: if isAuthenticated() && 

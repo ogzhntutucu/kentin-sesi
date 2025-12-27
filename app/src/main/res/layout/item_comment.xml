@@ -30,12 +30,33 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tvReplyingTo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="12sp"
+        android:textColor="#666"
+        android:visibility="gone"
+        tools:text="Ahmet kişisine yanıt" />
+
+    <TextView
         android:id="@+id/tvCommentText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textColor="#444"
         tools:text="Belediyenin bu konuda acil çalışması lazım, geçen gün kaza oluyordu." />
+
+    <Button
+        android:id="@+id/btnReply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:text="Yanıtla" />
 
     <View
         android:layout_width="match_parent"

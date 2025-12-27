@@ -44,6 +44,9 @@ object Constants {
     const val MAX_POST_TITLE_LENGTH = 100
     const val MAX_POST_DESCRIPTION_LENGTH = 500
     const val MAX_COMMENT_LENGTH = 200
+
+    // Comments
+    const val MAX_COMMENT_DEPTH = 4
     
     // Pagination
     const val POSTS_PAGE_SIZE = 20
