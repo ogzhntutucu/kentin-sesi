@@ -23,6 +23,10 @@ import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @AndroidEntryPoint
 class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragment_post_detail), OnMapReadyCallback {
@@ -117,6 +121,24 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         observePostLoadState()
         observeToggleUpvoteState()
         observeOwnerActions()
+
+        viewModel.postAuthor.observe(viewLifecycleOwner) { author ->
+            if (author == null) {
+                binding.cardPostAuthor.isVisible = false
+            } else {
+                binding.cardPostAuthor.isVisible = true
+                binding.tvPostAuthorFullName.text = author.fullName.ifBlank { "-" }
+                val location = listOf(author.city, author.district)
+                    .filter { it.isNotBlank() }
+                    .joinToString("/")
+                val title = author.title
+                binding.tvPostAuthorMeta.text = buildString {
+                    if (location.isNotBlank()) append(location)
+                    if (location.isNotBlank() && title.isNotBlank()) append(" • ")
+                    if (title.isNotBlank()) append(title)
+                }.ifBlank { " " }
+            }
+        }
     }
 
     private fun enterReplyMode(comment: Comment) {
@@ -135,6 +157,12 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         binding.replyBanner.isVisible = false
         binding.tvReplyBannerText.text = ""
         binding.etComment.hint = "Bir yorum yaz..."
+    }
+
+    private fun hideKeyboardAndClearInputFocus() {
+        binding.etComment.clearFocus()
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etComment.windowToken, 0)
     }
 
     private fun observePostLoadState() {
@@ -372,6 +400,11 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             tvDetailCategory.text = post.category
             tvDetailDistrict.text = "Hatay, ${post.district ?: "-"}"
 
+            tvDetailDate.text = post.createdAt?.toDate()?.let { date ->
+                val format = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+                format.format(date)
+            } ?: ""
+
             tvDetailStatus.text = when (post.statusEnum) {
                 PostStatus.NEW -> "Yeni"
                 PostStatus.IN_PROGRESS -> "İşlemde"
@@ -533,6 +566,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 }
                 is Resource.Success -> {
                     // Yorum başarıyla eklendi, yorumlar otomatik yenilenecek
+                    hideKeyboardAndClearInputFocus()
                 }
                 is Resource.Loading -> { }
             }
@@ -546,6 +580,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 }
                 is Resource.Success -> {
                     exitReplyMode()
+                    hideKeyboardAndClearInputFocus()
                 }
                 is Resource.Loading -> { }
             }

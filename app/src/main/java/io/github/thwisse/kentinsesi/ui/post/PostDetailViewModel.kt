@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.thwisse.kentinsesi.data.model.Comment
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.data.model.PostStatus
+import io.github.thwisse.kentinsesi.data.model.User
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository
 import io.github.thwisse.kentinsesi.data.repository.PostRepository
 import io.github.thwisse.kentinsesi.data.repository.UserRepository
@@ -51,6 +52,9 @@ class PostDetailViewModel @Inject constructor(
     
     private val _currentUser = MutableLiveData<io.github.thwisse.kentinsesi.data.model.User?>()
     val currentUser: LiveData<io.github.thwisse.kentinsesi.data.model.User?> = _currentUser
+
+    private val _postAuthor = MutableLiveData<User?>()
+    val postAuthor: LiveData<User?> = _postAuthor
     
     // Yetki kontrolleri için LiveData'lar - MediatorLiveData kullanarak
     // Post sahibi veya yetkili kullanıcılar durum güncelleyebilir
@@ -106,6 +110,18 @@ class PostDetailViewModel @Inject constructor(
         // Kullanıcı bilgisini coroutine içinde yükle
         viewModelScope.launch {
             loadCurrentUser()
+            loadPostAuthor(post.authorId)
+        }
+    }
+
+    private suspend fun loadPostAuthor(authorId: String) {
+        if (authorId.isBlank()) {
+            _postAuthor.value = null
+            return
+        }
+        val authorResult = userRepository.getUser(authorId)
+        if (authorResult is Resource.Success) {
+            _postAuthor.value = authorResult.data
         }
     }
     
@@ -122,6 +138,7 @@ class PostDetailViewModel @Inject constructor(
                     result.data?.let { post ->
                         _currentPost.value = post
                         loadCurrentUser()
+                        loadPostAuthor(post.authorId)
                         _postLoadState.value = Resource.Success(post)
                     }
                 }

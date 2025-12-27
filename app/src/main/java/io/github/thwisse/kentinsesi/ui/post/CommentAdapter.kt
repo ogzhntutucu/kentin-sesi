@@ -99,7 +99,7 @@ class CommentAdapter(
             val lp = binding.root.layoutParams
             if (lp is MarginLayoutParams) {
                 lp.marginStart = baseHorizontalMargin + indent
-                lp.marginEnd = baseHorizontalMargin
+                lp.marginEnd = 0
                 lp.topMargin = baseVerticalMargin
                 lp.bottomMargin = baseVerticalMargin
                 binding.root.layoutParams = lp
@@ -110,7 +110,9 @@ class CommentAdapter(
             // Sol alanın genişliği sabit kalsın: reply yoksa INVISIBLE (GONE değil)
             binding.tvRepliesToggle.visibility = if (count > 0) View.VISIBLE else View.INVISIBLE
             binding.tvRepliesToggle.text = "$count yanıt"
-            binding.tvRepliesToggle.setOnClickListener(null)
+            binding.tvRepliesToggle.setOnClickListener {
+                if (count > 0) onRepliesToggleClick?.invoke(comment)
+            }
 
             val canReply = comment.depth < Constants.MAX_COMMENT_DEPTH
 

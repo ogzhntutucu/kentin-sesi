@@ -49,6 +49,15 @@
                     android:textColor="@color/black"
                     tools:text="Büyük Çukur Sorunu" />
 
+                <TextView
+                    android:id="@+id/tvDetailDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#777"
+                    android:textSize="12sp"
+                    tools:text="27 Ara 2025, 15:22" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -144,6 +153,42 @@
                         tools:context=".ui.post.PostDetailFragment"
                         app:liteMode="true" />
                 </androidx.cardview.widget.CardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPostAuthor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:stateListAnimator="@null"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvPostAuthorFullName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            tools:text="Ahmet Yılmaz" />
+
+                        <TextView
+                            android:id="@+id/tvPostAuthorMeta"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="#666"
+                            android:textSize="12sp"
+                            tools:text="Hatay/İskenderun • Duyarlı Vatandaş" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
 
                 <View
                     android:layout_width="match_parent"
