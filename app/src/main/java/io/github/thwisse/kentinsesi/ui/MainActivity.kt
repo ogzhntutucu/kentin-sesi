@@ -64,7 +64,8 @@ class MainActivity : AppCompatActivity() {
             // PostDetail ve CreatePost ekranlarında bottom nav'i gizle
             val hideBottomNav = destination.id == R.id.postDetailFragment || 
                                destination.id == R.id.createPostFragment ||
-                               destination.id == R.id.locationPickerFragment
+                               destination.id == R.id.locationPickerFragment ||
+                               destination.id == R.id.adminPanelFragment
             
             binding.bottomNavView.visibility = if (hideBottomNav) {
                 android.view.View.GONE

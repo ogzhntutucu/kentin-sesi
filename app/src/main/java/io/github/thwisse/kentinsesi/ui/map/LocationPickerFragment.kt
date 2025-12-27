@@ -2,11 +2,13 @@ package io.github.thwisse.kentinsesi.ui.map
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -63,6 +65,17 @@ class LocationPickerFragment : Fragment(R.layout.fragment_location_picker), OnMa
             googleMap?.isMyLocationEnabled = true
             // Butonun konumunu biraz ayarlamak gerekebilir (Varsayılan olarak sağ üsttedir)
             googleMap?.uiSettings?.isMyLocationButtonEnabled = true
+
+            googleMap?.setOnMyLocationButtonClickListener {
+                val lm = requireContext().getSystemService(LocationManager::class.java)
+                val enabled = lm != null && LocationManagerCompat.isLocationEnabled(lm)
+                if (!enabled) {
+                    Toast.makeText(requireContext(), "Konumunuz kapalı. Lütfen konumu açın.", Toast.LENGTH_SHORT).show()
+                    true
+                } else {
+                    false
+                }
+            }
         } else {
             // İzin yoksa iste
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)

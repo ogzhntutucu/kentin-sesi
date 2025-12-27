@@ -42,6 +42,8 @@ class UserAdapter(
             currentUser = user
             
             binding.tvUserName.text = user.fullName.ifEmpty { "İsimsiz" }
+            binding.tvUserUsername.visibility = if (user.username.isNotBlank()) View.VISIBLE else View.GONE
+            binding.tvUserUsername.text = if (user.username.isNotBlank()) "@${user.username}" else ""
             binding.tvUserEmail.text = user.email
             binding.tvUserLocation.text = if (user.city.isNotEmpty() && user.district.isNotEmpty()) {
                 "${user.city}, ${user.district}"

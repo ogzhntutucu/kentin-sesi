@@ -17,6 +17,12 @@ interface UserRepository {
     
     // Admin paneli için: Tüm kullanıcıları getir
     suspend fun getAllUsers(): Resource<List<User>>
+
+    // Admin paneli için: Varsayılan olarak vatandaş olmayanları getir (admin + yetkili)
+    suspend fun getPrivilegedUsers(): Resource<List<User>>
+
+    // Admin paneli için: username ile kullanıcı bul
+    suspend fun searchUserByUsername(username: String): Resource<User>
     
     // Admin paneli için: Kullanıcı rolünü güncelle
     suspend fun updateUserRole(uid: String, newRole: String): Resource<Unit>

@@ -46,7 +46,16 @@ class AdminPanelFragment : Fragment(R.layout.fragment_admin_panel) {
             setupSwipeRefresh()
 
             binding.btnRefresh.setOnClickListener {
-                viewModel.loadAllUsers()
+                viewModel.loadPrivilegedUsers()
+            }
+
+            binding.btnSearch.setOnClickListener {
+                val q = binding.etSearchUsername.text?.toString().orEmpty().trim()
+                if (q.isBlank()) {
+                    viewModel.loadPrivilegedUsers()
+                } else {
+                    viewModel.searchByUsername(q)
+                }
             }
         }
     }
@@ -64,7 +73,7 @@ class AdminPanelFragment : Fragment(R.layout.fragment_admin_panel) {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadAllUsers()
+            viewModel.loadPrivilegedUsers()
         }
     }
 

@@ -32,6 +32,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private val viewModel: ProfileViewModel by viewModels()
     private lateinit var postAdapter: PostAdapter
 
+    private var isAdminUser: Boolean = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
@@ -42,22 +44,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         setupRecyclerView()
         setupSwipeRefresh()
         setupObservers()
-
-        // Admin Paneli Butonu (sadece admin kullanıcılar görebilir)
-        viewModel.userProfile.observe(viewLifecycleOwner) { resource ->
-            if (resource is Resource.Success) {
-                val user = resource.data
-                binding.btnAdminPanel.visibility = if (user?.isAdmin == true) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
-            }
-        }
-
-        binding.btnAdminPanel.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_profile_to_adminPanelFragment)
-        }
     }
 
     private fun setupMenu() {
@@ -67,8 +53,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 menuInflater.inflate(R.menu.menu_profile, menu)
             }
 
+            override fun onPrepareMenu(menu: Menu) {
+                menu.findItem(R.id.action_admin_panel)?.isVisible = isAdminUser
+            }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
+                    R.id.action_admin_panel -> {
+                        findNavController().navigate(R.id.action_nav_profile_to_adminPanelFragment)
+                        true
+                    }
                     R.id.action_theme -> {
                         showThemeDialog()
                         true
@@ -128,6 +122,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 is Resource.Success -> {
                     val user = resource.data
                     if (user != null) {
+                        val newIsAdmin = user.isAdmin
+                        if (newIsAdmin != isAdminUser) {
+                            isAdminUser = newIsAdmin
+                            requireActivity().invalidateOptionsMenu()
+                        }
+
                         // Kullanıcı adını göster
                         binding.tvUserName.text = user.fullName.ifEmpty { "İsim Belirtilmemiş" }
 
@@ -150,6 +150,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         binding.tvUserLocation.text = locationText
                     } else {
                         // Data null ise varsayılan değerleri göster
+                        if (isAdminUser) {
+                            isAdminUser = false
+                            requireActivity().invalidateOptionsMenu()
+                        }
                         binding.tvUserName.text = "Kullanıcı"
                         binding.tvUserUsername.visibility = View.GONE
                         binding.tvUserUsername.text = ""
@@ -158,6 +162,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
                 is Resource.Error -> {
                     // Hata durumunda varsayılan değerleri göster
+                    if (isAdminUser) {
+                        isAdminUser = false
+                        requireActivity().invalidateOptionsMenu()
+                    }
                     binding.tvUserName.text = "Kullanıcı"
                     binding.tvUserUsername.visibility = View.GONE
                     binding.tvUserUsername.text = ""

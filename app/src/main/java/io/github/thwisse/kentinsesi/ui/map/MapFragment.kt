@@ -1,8 +1,14 @@
 package io.github.thwisse.kentinsesi.ui.map
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -36,6 +42,15 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     private var googleMap: GoogleMap? = null
 
     private var latestPosts: List<Post> = emptyList()
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                enableMyLocation()
+            } else {
+                Toast.makeText(requireContext(), "Konumunuza gitmek için izin gerekli.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     // Marker ile Post'u eşleştirmek için bir harita (Map) tutuyoruz
     private val markerPostMap = HashMap<Marker, Post>()
@@ -131,8 +146,30 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
         val startLocation = LatLng(36.58, 36.17)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 12f))
 
+        enableMyLocation()
+
         // Harita hazır olduğunda mevcut filtrelenmiş listeyi bas
         addMarkers(latestPosts)
+    }
+
+    private fun enableMyLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap?.isMyLocationEnabled = true
+            googleMap?.uiSettings?.isMyLocationButtonEnabled = true
+
+            googleMap?.setOnMyLocationButtonClickListener {
+                val lm = requireContext().getSystemService(LocationManager::class.java)
+                val enabled = lm != null && LocationManagerCompat.isLocationEnabled(lm)
+                if (!enabled) {
+                    Toast.makeText(requireContext(), "Konumunuz kapalı. Lütfen konumu açın.", Toast.LENGTH_SHORT).show()
+                    true
+                } else {
+                    false
+                }
+            }
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
 
     private fun observePosts() {

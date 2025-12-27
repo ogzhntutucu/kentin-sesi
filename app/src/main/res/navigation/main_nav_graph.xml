@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/nav_home"
         android:name="io.github.thwisse.kentinsesi.ui.home.HomeFragment"
-        android:label="fragment_home"
+        android:label="Kentin Sesi"
         tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_homeFragment_to_createPostFragment"
@@ -26,7 +26,7 @@
     <fragment
         android:id="@+id/nav_map"
         android:name="io.github.thwisse.kentinsesi.ui.map.MapFragment"
-        android:label="fragment_map"
+        android:label="Kentin Sesi"
         tools:layout="@layout/fragment_map" >
         <action
             android:id="@+id/action_nav_map_to_postDetailFragment"
@@ -44,12 +44,12 @@
     <fragment
         android:id="@+id/nav_notifications"
         android:name="io.github.thwisse.kentinsesi.ui.notifications.NotificationsFragment"
-        android:label="fragment_notifications"
+        android:label="Bildirimler"
         tools:layout="@layout/fragment_notifications" />
     <fragment
         android:id="@+id/nav_profile"
         android:name="io.github.thwisse.kentinsesi.ui.profile.ProfileFragment"
-        android:label="fragment_profile"
+        android:label="Profil"
         tools:layout="@layout/fragment_profile" >
         <action
             android:id="@+id/action_nav_profile_to_postDetailFragment"

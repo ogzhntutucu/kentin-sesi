@@ -34,7 +34,7 @@ class AdminPanelViewModel @Inject constructor(
 
     init {
         loadCurrentUser()
-        loadAllUsers()
+        loadPrivilegedUsers()
     }
 
     /**
@@ -57,6 +57,25 @@ class AdminPanelViewModel @Inject constructor(
         viewModelScope.launch {
             _usersState.value = Resource.Loading()
             _usersState.value = userRepository.getAllUsers()
+        }
+    }
+
+    fun loadPrivilegedUsers() {
+        viewModelScope.launch {
+            _usersState.value = Resource.Loading()
+            _usersState.value = userRepository.getPrivilegedUsers()
+        }
+    }
+
+    fun searchByUsername(username: String) {
+        viewModelScope.launch {
+            _usersState.value = Resource.Loading()
+            val result = userRepository.searchUserByUsername(username)
+            _usersState.value = when (result) {
+                is Resource.Success -> Resource.Success(listOfNotNull(result.data))
+                is Resource.Error -> Resource.Error(result.message ?: "Böyle bir kullanıcı yok")
+                is Resource.Loading -> Resource.Loading()
+            }
         }
     }
 

@@ -51,6 +51,8 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
     private var replyingTo: Comment? = null
 
+    private var lastRequestedStatus: PostStatus? = null
+
     private var isCommentsSectionExpanded: Boolean = false
 
     private var allThreadedComments: List<Comment> = emptyList()
@@ -352,23 +354,31 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 io.github.thwisse.kentinsesi.R.id.rbResolved -> io.github.thwisse.kentinsesi.data.model.PostStatus.RESOLVED
                 else -> null
             }
-            
-            selectedStatus?.let { status ->
-                currentPostId?.let { postId ->
-                    viewModel.updatePostStatus(postId, status)
-                    dialog.dismiss()
-                }
+
+            if (selectedStatus == null) {
+                Toast.makeText(requireContext(), "Lütfen bir durum seçin", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            val postId = currentPostId
+            if (postId == null) {
+                Toast.makeText(requireContext(), "Post ID bulunamadı", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lastRequestedStatus = selectedStatus
+            viewModel.updatePostStatus(postId, selectedStatus)
+            dialog.dismiss()
         }
-        
+
         dialog.show()
     }
 
     private fun observeOwnerActions() {
         viewModel.deletePostState.observe(viewLifecycleOwner) { resource ->
-            when(resource) {
+            when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Paylaşım silindi.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Post silindi", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }
                 is Resource.Error -> Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
@@ -377,20 +387,19 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         }
 
         viewModel.updateStatusState.observe(viewLifecycleOwner) { resource ->
-            when(resource) {
+            when (resource) {
                 is Resource.Success -> {
-                    // ViewModel'de post zaten güncellendi, güncel post'u al
-                    val updatedPost = viewModel.currentPost.value
-                    updatedPost?.let { post ->
-                        val statusText = when (post.statusEnum) {
-                            io.github.thwisse.kentinsesi.data.model.PostStatus.NEW -> "Yeni"
-                            io.github.thwisse.kentinsesi.data.model.PostStatus.IN_PROGRESS -> "İşlemde"
-                            io.github.thwisse.kentinsesi.data.model.PostStatus.RESOLVED -> "Çözüldü"
-                            else -> "Güncellendi"
-                        }
-                        Toast.makeText(requireContext(), "Durum güncellendi: $statusText", Toast.LENGTH_SHORT).show()
-                        setupViews(post)
+                    val statusText = when (lastRequestedStatus) {
+                        PostStatus.NEW -> "Yeni"
+                        PostStatus.IN_PROGRESS -> "İşlemde"
+                        PostStatus.RESOLVED -> "Çözüldü"
+                        PostStatus.REJECTED -> "Reddedildi"
+                        else -> "Güncellendi"
                     }
+                    Toast.makeText(requireContext(), "Durum güncellendi: $statusText", Toast.LENGTH_SHORT).show()
+
+                    // ViewModel optimistic update yaptı, ekranı da güncelle
+                    viewModel.currentPost.value?.let { setupViews(it) }
                 }
                 is Resource.Error -> Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                 is Resource.Loading -> { }

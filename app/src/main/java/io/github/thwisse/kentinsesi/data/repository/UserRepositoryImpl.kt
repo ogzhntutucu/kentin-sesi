@@ -162,6 +162,48 @@ class UserRepositoryImpl @Inject constructor(
             Resource.Error(e.message ?: "Kullanıcılar alınamadı.")
         }
     }
+
+    override suspend fun getPrivilegedUsers(): Resource<List<User>> {
+        return try {
+            val snapshot = firestore.collection(Constants.COLLECTION_USERS)
+                .whereIn("role", listOf(UserRole.ADMIN.value, UserRole.OFFICIAL.value))
+                .get()
+                .await()
+
+            val users = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(User::class.java)?.copy(uid = doc.id)
+            }
+
+            Resource.Success(users)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Kullanıcılar alınamadı.")
+        }
+    }
+
+    override suspend fun searchUserByUsername(username: String): Resource<User> {
+        return try {
+            val normalized = normalizeUsername(username)
+            val usernameDoc = firestore.collection("usernames").document(normalized).get().await()
+            if (!usernameDoc.exists()) {
+                return Resource.Error("Böyle bir kullanıcı yok")
+            }
+
+            val uid = usernameDoc.getString("uid").orEmpty()
+            if (uid.isBlank()) {
+                return Resource.Error("Böyle bir kullanıcı yok")
+            }
+
+            val userDoc = firestore.collection(Constants.COLLECTION_USERS).document(uid).get().await()
+            val user = userDoc.toObject(User::class.java)
+            if (user == null) {
+                Resource.Error("Böyle bir kullanıcı yok")
+            } else {
+                Resource.Success(user.copy(uid = userDoc.id))
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Kullanıcı bulunamadı")
+        }
+    }
     
     // 6. Kullanıcı rolünü güncelle (Admin paneli için)
     override suspend fun updateUserRole(uid: String, newRole: String): Resource<Unit> {

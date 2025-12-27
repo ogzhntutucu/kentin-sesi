@@ -3,6 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_admin_panel"
+        android:title="Admin Paneli"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_theme"
         android:title="Tema"
         app:showAsAction="never" />
