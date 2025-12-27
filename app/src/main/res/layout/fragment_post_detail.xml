@@ -178,6 +178,15 @@
                             tools:text="Ahmet Yılmaz" />
 
                         <TextView
+                            android:id="@+id/tvPostAuthorUsername"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="#666"
+                            android:textSize="12sp"
+                            tools:text="@kullaniciadi" />
+
+                        <TextView
                             android:id="@+id/tvPostAuthorMeta"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

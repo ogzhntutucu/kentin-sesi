@@ -128,6 +128,11 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             } else {
                 binding.cardPostAuthor.isVisible = true
                 binding.tvPostAuthorFullName.text = author.fullName.ifBlank { "-" }
+
+                val username = author.username.trim().takeIf { it.isNotBlank() }
+                binding.tvPostAuthorUsername.isVisible = username != null
+                binding.tvPostAuthorUsername.text = if (username != null) "@$username" else ""
+
                 val location = listOf(author.city, author.district)
                     .filter { it.isNotBlank() }
                     .joinToString("/")

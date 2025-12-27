@@ -33,10 +33,34 @@ service cloud.firestore {
       allow create: if isOwner(userId);
       
       // Güncelleme: Sadece kendi profilini güncelleyebilir (admin hariç)
-      allow update: if isOwner(userId) || isAdmin();
+      allow update: if (isOwner(userId) && (
+        // username ilk defa set edilebilir ve index ile doğrulanmalı
+        (
+          (!('username' in resource.data) || resource.data.username == '') &&
+          request.resource.data.username is string &&
+          request.resource.data.username.size() >= 3 &&
+          request.resource.data.username.size() <= 20 &&
+          existsAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)) &&
+          getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == request.auth.uid
+        ) ||
+        // username değişmiyorsa normal update
+        (request.resource.data.username == resource.data.username)
+      )) || isAdmin();
       
       // Silme: Sadece admin silebilir
       allow delete: if isAdmin();
+    }
+
+    // ========== USERNAMES INDEX COLLECTION ==========
+    match /usernames/{username} {
+      allow read: if isAuthenticated();
+
+      // Username sadece bir kez oluşturulur; doc id = username (lowercase)
+      allow create: if isAuthenticated() &&
+                   request.resource.data.uid == request.auth.uid &&
+                   username.matches('^[a-z0-9_]{3,20}$');
+
+      allow update, delete: if false;
     }
     
     // ========== POSTS COLLECTION ==========

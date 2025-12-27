@@ -2,6 +2,7 @@ package io.github.thwisse.kentinsesi.data.repository
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import io.github.thwisse.kentinsesi.data.model.User
 import io.github.thwisse.kentinsesi.data.model.UserRole
 import io.github.thwisse.kentinsesi.util.Constants
@@ -12,6 +13,10 @@ import javax.inject.Inject
 class UserRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : UserRepository {
+
+    private fun normalizeUsername(input: String): String {
+        return input.trim().removePrefix("@").trim().lowercase()
+    }
 
     // 1. Kullanıcı Profili Oluşturma
     override suspend fun createUserProfile(uid: String, fullName: String, email: String): Resource<Unit> {
@@ -45,29 +50,57 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     // 2. Kullanıcı Profili Güncelleme
-    override suspend fun updateUserProfile(uid: String, fullName: String, city: String, district: String): Resource<Unit> {
+    override suspend fun updateUserProfile(uid: String, fullName: String, username: String, city: String, district: String): Resource<Unit> {
         return try {
-            val updates = mapOf(
-                "fullName" to fullName,
-                "city" to city,
-                "district" to district,
-                // Constants kullanarak title'ı merkezileştirdik
-                "title" to Constants.TITLE_SENSITIVE_CITIZEN // "Duyarlı Vatandaş" yerine
-            )
+            val normalized = normalizeUsername(username)
+            val usernameRegex = Regex("^[a-z0-9_]{3,20}$")
+            if (normalized.isBlank() || !usernameRegex.matches(normalized)) {
+                return Resource.Error("Geçersiz kullanıcı adı")
+            }
 
-            firestore.collection(Constants.COLLECTION_USERS).document(uid).update(updates).await()
+            val userRef = firestore.collection(Constants.COLLECTION_USERS).document(uid)
+            val usernameRef = firestore.collection("usernames").document(normalized)
 
-            // Eski şemadan kalan gereksiz alanları temizle (varsa)
-            firestore.collection(Constants.COLLECTION_USERS)
-                .document(uid)
-                .update(
+            firestore.runTransaction { tx ->
+                val userSnap = tx.get(userRef)
+                val existingUsername = userSnap.getString("username").orEmpty().trim().lowercase()
+
+                if (existingUsername.isNotBlank() && existingUsername != normalized) {
+                    throw IllegalStateException("Kullanıcı adı değiştirilemez")
+                }
+
+                if (existingUsername.isBlank()) {
+                    val unameSnap = tx.get(usernameRef)
+                    if (unameSnap.exists()) {
+                        throw IllegalStateException("Bu kullanıcı adı zaten alınmış")
+                    }
+
+                    tx.set(
+                        usernameRef,
+                        mapOf(
+                            "uid" to uid,
+                            "createdAt" to FieldValue.serverTimestamp()
+                        )
+                    )
+                }
+
+                tx.set(
+                    userRef,
                     mapOf(
+                        "fullName" to fullName,
+                        "username" to normalized,
+                        "city" to city,
+                        "district" to district,
+                        "title" to Constants.TITLE_SENSITIVE_CITIZEN,
                         "admin" to FieldValue.delete(),
                         "official" to FieldValue.delete(),
                         "roleEnum" to FieldValue.delete()
-                    )
+                    ),
+                    SetOptions.merge()
                 )
-                .await()
+
+                null
+            }.await()
 
             Resource.Success(Unit)
         } catch (e: Exception) {

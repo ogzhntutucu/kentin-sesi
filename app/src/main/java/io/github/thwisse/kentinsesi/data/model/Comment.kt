@@ -9,6 +9,7 @@ data class Comment(
     val authorId: String = "",
     val authorName: String = "", // Geriye uyumluluk için (eski yorumlar)
     val authorFullName: String = "",
+    val authorUsername: String = "",
     val authorCity: String = "",
     val authorDistrict: String = "",
     val authorTitle: String = "",
@@ -22,6 +23,7 @@ data class Comment(
     val replyToAuthorId: String? = null,
     val replyToAuthorName: String? = null,
     val replyToAuthorFullName: String? = null,
+    val replyToAuthorUsername: String? = null,
 
     @ServerTimestamp
     val createdAt: Date? = null

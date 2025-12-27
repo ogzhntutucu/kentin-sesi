@@ -130,6 +130,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     if (user != null) {
                         // Kullanıcı adını göster
                         binding.tvUserName.text = user.fullName.ifEmpty { "İsim Belirtilmemiş" }
+
+                        val username = user.username.trim().takeIf { it.isNotBlank() }
+                        binding.tvUserUsername.visibility = if (username != null) {
+                            View.VISIBLE
+                        } else {
+                            View.GONE
+                        }
+                        binding.tvUserUsername.text = if (username != null) "@$username" else ""
                         
                         // Şehir ve ilçe bilgisini birleştirerek göster
                         val locationText = when {
@@ -143,12 +151,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     } else {
                         // Data null ise varsayılan değerleri göster
                         binding.tvUserName.text = "Kullanıcı"
+                        binding.tvUserUsername.visibility = View.GONE
+                        binding.tvUserUsername.text = ""
                         binding.tvUserLocation.text = "Konum Belirtilmemiş"
                     }
                 }
                 is Resource.Error -> {
                     // Hata durumunda varsayılan değerleri göster
                     binding.tvUserName.text = "Kullanıcı"
+                    binding.tvUserUsername.visibility = View.GONE
+                    binding.tvUserUsername.text = ""
                     binding.tvUserLocation.text = "Konum Belirtilmemiş"
                 }
                 is Resource.Loading -> {

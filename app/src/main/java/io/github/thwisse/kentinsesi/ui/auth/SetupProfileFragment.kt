@@ -59,6 +59,7 @@ class SetupProfileFragment : Fragment() {
     private fun setupClickListeners() {
         binding.btnSaveProfile.setOnClickListener {
             val fullName = binding.etFullName.text.toString().trim()
+            val usernameRaw = binding.etUsername.text.toString().trim()
             val city = binding.actvCity.text.toString().trim() // "Hatay" sabit zaten
             val district = binding.actvDistrict.text.toString().trim()
 
@@ -69,6 +70,21 @@ class SetupProfileFragment : Fragment() {
                 binding.tilFullName.error = null
             }
 
+            val username = usernameRaw
+                .removePrefix("@").trim()
+                .lowercase()
+
+            val usernameRegex = Regex("^[a-z0-9_]{3,20}$")
+            if (username.isBlank()) {
+                binding.tilUsername.error = "Kullanıcı adı boş bırakılamaz"
+                return@setOnClickListener
+            } else if (!usernameRegex.matches(username)) {
+                binding.tilUsername.error = "Kullanıcı adı 3-20 karakter olmalı (a-z, 0-9, _)"
+                return@setOnClickListener
+            } else {
+                binding.tilUsername.error = null
+            }
+
             if (district.isEmpty()) {
                 binding.tilDistrict.error = "Lütfen ilçe seçiniz"
                 return@setOnClickListener
@@ -77,7 +93,7 @@ class SetupProfileFragment : Fragment() {
             }
 
             // ViewModel'e verileri gönder
-            viewModel.completeProfile(fullName, city, district)
+            viewModel.completeProfile(fullName, username, city, district)
         }
     }
 

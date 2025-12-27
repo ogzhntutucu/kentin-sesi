@@ -45,7 +45,12 @@ class CommentAdapter(
     inner class CommentViewHolder(private val binding: ItemCommentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
             val fullName = comment.authorFullName.ifBlank { comment.authorName }.ifBlank { "Anonim" }
-            binding.tvAuthorFullName.text = fullName
+            val username = comment.authorUsername.trim().takeIf { it.isNotBlank() }
+            binding.tvAuthorFullName.text = if (username != null) {
+                "$fullName (@$username)"
+            } else {
+                fullName
+            }
             binding.tvCommentText.text = comment.text
 
             val location = listOf(comment.authorCity, comment.authorDistrict)

@@ -292,6 +292,8 @@ class PostRepositoryImpl @Inject constructor(
                 ?: user.email?.substringBefore("@")
                 ?: "Anonim"
 
+            val username = profile?.username?.trim().orEmpty()
+
             val city = profile?.city ?: ""
             val district = profile?.district ?: ""
             val title = profile?.title ?: ""
@@ -301,6 +303,7 @@ class PostRepositoryImpl @Inject constructor(
                 authorId = user.uid,
                 authorName = fullName,
                 authorFullName = fullName,
+                authorUsername = username,
                 authorCity = city,
                 authorDistrict = district,
                 authorTitle = title,
@@ -339,6 +342,8 @@ class PostRepositoryImpl @Inject constructor(
                 ?: user.email?.substringBefore("@")
                 ?: "Anonim"
 
+            val username = profile?.username?.trim().orEmpty()
+
             val city = profile?.city ?: ""
             val district = profile?.district ?: ""
             val title = profile?.title ?: ""
@@ -371,11 +376,14 @@ class PostRepositoryImpl @Inject constructor(
             val replyToFullNameResolved = parent.authorFullName.takeIf { it.isNotBlank() }
                 ?: parent.authorName.takeIf { it.isNotBlank() }
 
+            val replyToUsernameResolved = parent.authorUsername.takeIf { it.isNotBlank() }
+
             val reply = Comment(
                 postId = postId,
                 authorId = user.uid,
                 authorName = fullName,
                 authorFullName = fullName,
+                authorUsername = username,
                 authorCity = city,
                 authorDistrict = district,
                 authorTitle = title,
@@ -385,7 +393,8 @@ class PostRepositoryImpl @Inject constructor(
                 depth = parent.depth + 1,
                 replyToAuthorId = replyToAuthorId,
                 replyToAuthorName = replyToNameResolved,
-                replyToAuthorFullName = replyToFullNameResolved
+                replyToAuthorFullName = replyToFullNameResolved,
+                replyToAuthorUsername = replyToUsernameResolved
             )
 
             val rootRef = commentsCol.document(rootId)
