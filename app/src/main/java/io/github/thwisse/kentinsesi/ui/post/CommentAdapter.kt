@@ -1,6 +1,7 @@
 package io.github.thwisse.kentinsesi.ui.post
 
 import android.view.LayoutInflater
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
@@ -13,7 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class CommentAdapter(
-    private val onReplyClick: ((Comment) -> Unit)? = null
+    private val onCommentClick: ((Comment) -> Unit)? = null
 ) : ListAdapter<Comment, CommentAdapter.CommentViewHolder>(CommentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -27,20 +28,30 @@ class CommentAdapter(
 
     inner class CommentViewHolder(private val binding: ItemCommentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
-            binding.tvAuthorName.text = comment.authorName
+            val fullName = comment.authorFullName.ifBlank { comment.authorName }.ifBlank { "Anonim" }
+            binding.tvAuthorFullName.text = fullName
             binding.tvCommentText.text = comment.text
 
-            binding.tvReplyingTo.isVisible = !comment.replyToAuthorName.isNullOrBlank()
-            binding.tvReplyingTo.text = if (!comment.replyToAuthorName.isNullOrBlank()) {
-                "${comment.replyToAuthorName} kişisine yanıt"
+            val location = listOf(comment.authorCity, comment.authorDistrict)
+                .filter { it.isNotBlank() }
+                .joinToString("/")
+            val title = comment.authorTitle
+
+            binding.tvAuthorMeta.text = buildString {
+                if (location.isNotBlank()) append(location)
+                if (location.isNotBlank() && title.isNotBlank()) append(" • ")
+                if (title.isNotBlank()) append(title)
+            }.ifBlank { " " }
+
+            val replyTo = comment.replyToAuthorFullName
+                ?.takeIf { it.isNotBlank() }
+                ?: comment.replyToAuthorName?.takeIf { it.isNotBlank() }
+
+            binding.tvReplyingTo.isVisible = !replyTo.isNullOrBlank()
+            binding.tvReplyingTo.text = if (!replyTo.isNullOrBlank()) {
+                "${replyTo} kişisine yanıt"
             } else {
                 ""
-            }
-
-            val canReply = comment.depth < Constants.MAX_COMMENT_DEPTH
-            binding.btnReply.isVisible = canReply
-            binding.btnReply.setOnClickListener {
-                if (canReply) onReplyClick?.invoke(comment)
             }
 
             // Tarihi formatla (Örn: 12 May, 14:30)
@@ -53,14 +64,26 @@ class CommentAdapter(
             }
 
             val density = binding.root.resources.displayMetrics.density
-            val basePadding = (16 * density).toInt()
-            val indent = (comment.depth.coerceIn(0, Constants.MAX_COMMENT_DEPTH) * 16 * density).toInt()
-            binding.root.setPaddingRelative(
-                basePadding + indent,
-                binding.root.paddingTop,
-                basePadding,
-                binding.root.paddingBottom
-            )
+
+            val baseHorizontalMargin = (12 * density).toInt()
+            val baseVerticalMargin = (6 * density).toInt()
+            val indent = (comment.depth.coerceIn(0, Constants.MAX_COMMENT_DEPTH) * 12 * density).toInt()
+
+            // Kartın kendisini sağa kaydır (kart daha küçük görünür), içerik padding'ini değil.
+            val lp = binding.root.layoutParams
+            if (lp is MarginLayoutParams) {
+                lp.marginStart = baseHorizontalMargin + indent
+                lp.marginEnd = baseHorizontalMargin
+                lp.topMargin = baseVerticalMargin
+                lp.bottomMargin = baseVerticalMargin
+                binding.root.layoutParams = lp
+            }
+
+            val canReply = comment.depth < Constants.MAX_COMMENT_DEPTH
+            binding.root.isEnabled = canReply
+            binding.root.setOnClickListener {
+                if (canReply) onCommentClick?.invoke(comment)
+            }
         }
     }
 

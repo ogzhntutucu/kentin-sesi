@@ -7,7 +7,11 @@ data class Comment(
     val id: String = "",
     val postId: String = "",
     val authorId: String = "",
-    val authorName: String = "", // Yazan kişinin adı (DB'den çekmek yerine buraya kaydetmek pratik olur)
+    val authorName: String = "", // Geriye uyumluluk için (eski yorumlar)
+    val authorFullName: String = "",
+    val authorCity: String = "",
+    val authorDistrict: String = "",
+    val authorTitle: String = "",
     val text: String = "",
 
     // Reply alanları
@@ -17,6 +21,7 @@ data class Comment(
     val replyCount: Long = 0L, // Only meaningful for top-level comments
     val replyToAuthorId: String? = null,
     val replyToAuthorName: String? = null,
+    val replyToAuthorFullName: String? = null,
 
     @ServerTimestamp
     val createdAt: Date? = null

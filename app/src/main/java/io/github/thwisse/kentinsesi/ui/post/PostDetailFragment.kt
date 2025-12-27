@@ -31,7 +31,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     // ViewModel Tanımı
     private val viewModel: PostDetailViewModel by viewModels()
     private val commentAdapter = CommentAdapter(
-        onReplyClick = { comment ->
+        onCommentClick = { comment ->
             enterReplyMode(comment)
         }
     )
@@ -103,7 +103,9 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     private fun enterReplyMode(comment: Comment) {
         replyingTo = comment
         binding.replyBanner.isVisible = true
-        val name = comment.authorName.ifBlank { "-" }
+        val name = comment.authorFullName
+            .ifBlank { comment.authorName }
+            .ifBlank { "-" }
         binding.tvReplyBannerText.text = "${name} kişisine yanıt"
         binding.etComment.hint = "Yanıt yaz..."
         binding.etComment.requestFocus()

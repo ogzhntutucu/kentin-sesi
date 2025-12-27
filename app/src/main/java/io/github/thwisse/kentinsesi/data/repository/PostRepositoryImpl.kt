@@ -9,6 +9,7 @@ import com.google.firebase.storage.FirebaseStorage
 import io.github.thwisse.kentinsesi.data.model.Comment
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.data.model.PostStatus
+import io.github.thwisse.kentinsesi.data.model.User
 import io.github.thwisse.kentinsesi.util.Constants
 import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.tasks.await
@@ -282,12 +283,26 @@ class PostRepositoryImpl @Inject constructor(
             // 2. DÜZELTME: 'currentUser' yerine 'auth.currentUser' yazıldı.
             val user = auth.currentUser ?: throw Exception("Oturum açılmamış.")
 
-            val authorName = user.displayName ?: user.email?.substringBefore("@") ?: "Anonim"
+            val userDoc = firestore.collection(Constants.COLLECTION_USERS).document(user.uid).get().await()
+            val profile = userDoc.toObject(User::class.java)
+
+            val fullName = profile?.fullName?.takeIf { it.isNotBlank() }
+                ?: user.displayName?.takeIf { it.isNotBlank() }
+                ?: user.email?.substringBefore("@")
+                ?: "Anonim"
+
+            val city = profile?.city ?: ""
+            val district = profile?.district ?: ""
+            val title = profile?.title ?: ""
 
             val comment = Comment(
                 postId = postId,
                 authorId = user.uid,
-                authorName = authorName,
+                authorName = fullName,
+                authorFullName = fullName,
+                authorCity = city,
+                authorDistrict = district,
+                authorTitle = title,
                 text = text
             )
 
@@ -311,7 +326,18 @@ class PostRepositoryImpl @Inject constructor(
     ): Resource<Unit> {
         return try {
             val user = auth.currentUser ?: throw Exception("Oturum açılmamış.")
-            val authorName = user.displayName ?: user.email?.substringBefore("@") ?: "Anonim"
+
+            val userDoc = firestore.collection(Constants.COLLECTION_USERS).document(user.uid).get().await()
+            val profile = userDoc.toObject(User::class.java)
+
+            val fullName = profile?.fullName?.takeIf { it.isNotBlank() }
+                ?: user.displayName?.takeIf { it.isNotBlank() }
+                ?: user.email?.substringBefore("@")
+                ?: "Anonim"
+
+            val city = profile?.city ?: ""
+            val district = profile?.district ?: ""
+            val title = profile?.title ?: ""
 
             val commentsCol = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
                 .collection(Constants.COLLECTION_COMMENTS)
@@ -334,16 +360,28 @@ class PostRepositoryImpl @Inject constructor(
                 parent.rootCommentId ?: parent.id
             }
 
+            val replyToNameResolved = replyToAuthorName?.takeIf { it.isNotBlank() }
+                ?: parent.authorFullName.takeIf { it.isNotBlank() }
+                ?: parent.authorName.takeIf { it.isNotBlank() }
+
+            val replyToFullNameResolved = parent.authorFullName.takeIf { it.isNotBlank() }
+                ?: parent.authorName.takeIf { it.isNotBlank() }
+
             val reply = Comment(
                 postId = postId,
                 authorId = user.uid,
-                authorName = authorName,
+                authorName = fullName,
+                authorFullName = fullName,
+                authorCity = city,
+                authorDistrict = district,
+                authorTitle = title,
                 text = text,
                 parentCommentId = parent.id,
                 rootCommentId = rootId,
                 depth = parent.depth + 1,
                 replyToAuthorId = replyToAuthorId,
-                replyToAuthorName = replyToAuthorName
+                replyToAuthorName = replyToNameResolved,
+                replyToAuthorFullName = replyToFullNameResolved
             )
 
             val rootRef = commentsCol.document(rootId)
