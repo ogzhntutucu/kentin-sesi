@@ -35,6 +35,8 @@ data class Post(
     val status: String = PostStatus.NEW.value, // Varsayılan: "new"
     val upvoteCount: Long = 0,
     val upvotedBy: List<String> = emptyList(),
+
+    val commentCount: Long = 0,
 ) {
     
     /**

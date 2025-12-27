@@ -75,16 +75,6 @@
                 android:textSize="13sp"
                 tools:text="Hatay, İskenderun" />
 
-            <TextView
-                android:id="@+id/tvDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textColor="#666666"
-                tools:text="İskenderun sahil yolunda büyük bir çukur oluşmuş durumda, sürücüler için tehlike arz ediyor." />
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -103,6 +93,17 @@
                     android:layout_centerVertical="true"
                     android:textStyle="bold"
                     tools:text="12 Destek" />
+
+                <TextView
+                    android:id="@+id/tvCommentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/tvUpvoteCount"
+                    android:layout_marginStart="12dp"
+                    android:layout_centerVertical="true"
+                    android:textColor="#666666"
+                    android:textStyle="bold"
+                    tools:text="15 Yorum" />
 
                 <TextView
                     android:id="@+id/tvDate"

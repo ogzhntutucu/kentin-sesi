@@ -56,7 +56,8 @@ class PostRepositoryImpl @Inject constructor(
                 status = PostStatus.NEW.value,
                 // Post oluşturulduğunda yazarın kendi oyu otomatik +1 olarak ekleniyor
                 upvoteCount = 1,
-                upvotedBy = listOf(currentUser.uid) // Yazarın kendisi otomatik upvote ediyor
+                upvotedBy = listOf(currentUser.uid), // Yazarın kendisi otomatik upvote ediyor
+                commentCount = 0
             )
 
             // Constants kullanarak collection adını merkezileştirdik
@@ -306,10 +307,13 @@ class PostRepositoryImpl @Inject constructor(
                 text = text
             )
 
-            firestore.collection(Constants.COLLECTION_POSTS).document(postId)
-                .collection(Constants.COLLECTION_COMMENTS)
-                .add(comment)
-                .await()
+            val postRef = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+            val commentsCol = postRef.collection(Constants.COLLECTION_COMMENTS)
+
+            firestore.runTransaction { tx ->
+                tx.set(commentsCol.document(), comment)
+                tx.update(postRef, "commentCount", FieldValue.increment(1))
+            }.await()
 
             Resource.Success(Unit)
         } catch (e: Exception) {
@@ -339,8 +343,8 @@ class PostRepositoryImpl @Inject constructor(
             val district = profile?.district ?: ""
             val title = profile?.title ?: ""
 
-            val commentsCol = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
-                .collection(Constants.COLLECTION_COMMENTS)
+            val postRef = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
+            val commentsCol = postRef.collection(Constants.COLLECTION_COMMENTS)
 
             val parentDoc = commentsCol.document(parentCommentId).get().await()
             if (!parentDoc.exists()) {
@@ -391,6 +395,8 @@ class PostRepositoryImpl @Inject constructor(
                 tx.set(commentsCol.document(), reply)
                 // denormalized reply count on root comment
                 tx.update(rootRef, "replyCount", FieldValue.increment(1))
+                // denormalized total comment count on post
+                tx.update(postRef, "commentCount", FieldValue.increment(1))
             }.await()
 
             Resource.Success(Unit)

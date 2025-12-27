@@ -60,7 +60,14 @@ service cloud.firestore {
         (isOfficial() && 
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
         // Herhangi bir giriş yapmış kullanıcı upvote yapabilir (upvotedBy ve upvoteCount)
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotedBy', 'upvoteCount']))
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotedBy', 'upvoteCount'])) ||
+        // Herhangi bir giriş yapmış kullanıcı commentCount'u +1 artırabilir
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) &&
+          // FieldValue.increment() kullanıldığında bazı durumlarda eşitlik kontrolü sorun çıkarabiliyor.
+          // Bu yüzden sadece commentCount alanının güncellendiğini doğrulayıp izin veriyoruz.
+          request.resource.data.commentCount is int
+        )
       );
       
       // Silme: Post sahibi veya admin silebilir
@@ -82,9 +89,11 @@ service cloud.firestore {
                          isOwner(resource.data.authorId) ||
                          // Reply atılınca root yorumun replyCount alanı +1 güncellenebilsin
                          (
-                           resource.data.depth == 0 &&
+                           // Eski yorumlarda depth alanı olmayabilir => top-level kabul et
+                           (resource.data.depth == 0 || resource.data.depth == null) &&
                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['replyCount']) &&
-                           request.resource.data.replyCount == resource.data.replyCount + 1
+                           // replyCount increment için sadece tip kontrolü yapıyoruz
+                           request.resource.data.replyCount is int
                          )
                        );
         

@@ -26,9 +26,9 @@ class PostAdapter(
         fun bind(post: Post) {
             binding.apply {
                 tvTitle.text = post.title
-                tvDescription.text = post.description
                 tvCategory.text = post.category
                 tvUpvoteCount.text = "${post.upvoteCount} Destek"
+                tvCommentCount.text = "${post.commentCount} Yorum"
 
                 tvLocation.text = "Hatay, ${post.district ?: "-"}"
 

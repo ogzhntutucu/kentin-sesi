@@ -20,6 +20,8 @@ import io.github.thwisse.kentinsesi.util.ValidationUtils
 import androidx.core.view.isVisible
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 
 @AndroidEntryPoint
@@ -33,6 +35,9 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     private val commentAdapter = CommentAdapter(
         onCommentClick = { comment ->
             enterReplyMode(comment)
+        },
+        onRepliesToggleClick = { rootComment ->
+            toggleReplies(rootComment)
         }
     )
 
@@ -42,12 +47,26 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
     private var replyingTo: Comment? = null
 
+    private var isCommentsSectionExpanded: Boolean = false
+
+    private var allThreadedComments: List<Comment> = emptyList()
+    private val expandedCommentIds = mutableSetOf<String>()
+
     private var isRefreshingPost: Boolean = false
     private var isRefreshingComments: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPostDetailBinding.bind(view)
+
+        val baseInputPaddingBottom = binding.inputLayout.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.inputLayout) { v, insets ->
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val sysBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            val bottom = maxOf(imeBottom, sysBottom)
+            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, baseInputPaddingBottom + bottom)
+            insets
+        }
 
         binding.btnCancelReply.setOnClickListener {
             exitReplyMode()
@@ -174,6 +193,8 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         setupMap(post)
         setupComments()
         setupOfficialActions()
+
+        binding.tvCommentsHeader.text = "Yorumlar (${post.commentCount} yorum)"
         
         // Menü kurulumu
         setupOwnerMenu()
@@ -411,6 +432,24 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             layoutManager = LinearLayoutManager(requireContext())
         }
 
+        // Başlangıçta yorumlar kapalıysa input alanı da kapalı olsun
+        binding.inputLayout.isVisible = isCommentsSectionExpanded
+        if (!isCommentsSectionExpanded) {
+            binding.replyBanner.isVisible = false
+        }
+
+        binding.cardCommentsHeader.setOnClickListener {
+            isCommentsSectionExpanded = !isCommentsSectionExpanded
+            binding.rvComments.isVisible = isCommentsSectionExpanded
+            binding.spaceCommentsBottom.isVisible = isCommentsSectionExpanded
+
+            binding.inputLayout.isVisible = isCommentsSectionExpanded
+            if (!isCommentsSectionExpanded) {
+                exitReplyMode()
+                binding.replyBanner.isVisible = false
+            }
+        }
+
         binding.btnSendComment.setOnClickListener {
             val text = binding.etComment.text.toString().trim()
             
@@ -455,7 +494,17 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    commentAdapter.submitList(resource.data)
+                    val all = resource.data ?: emptyList()
+                    allThreadedComments = all
+
+                    binding.tvCommentsHeader.text = "Yorumlar (${all.size} yorum)"
+
+                    val childCounts = buildChildCountByParentId(all)
+                    commentAdapter.setChildCountByParentId(childCounts)
+                    commentAdapter.setExpandedCommentIds(expandedCommentIds)
+
+                    val visible = buildVisibleComments(all, expandedCommentIds)
+                    commentAdapter.submitList(visible)
                     if (isRefreshingComments) {
                         isRefreshingComments = false
                         if (!isRefreshingPost) {
@@ -501,6 +550,68 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 is Resource.Loading -> { }
             }
         }
+    }
+
+    private fun toggleReplies(rootComment: Comment) {
+        val id = rootComment.id
+        if (id.isBlank()) return
+
+        if (expandedCommentIds.contains(id)) {
+            expandedCommentIds.remove(id)
+        } else {
+            expandedCommentIds.add(id)
+        }
+
+        commentAdapter.setExpandedCommentIds(expandedCommentIds)
+        val visible = buildVisibleComments(allThreadedComments, expandedCommentIds)
+        commentAdapter.submitList(visible)
+    }
+
+    private fun buildChildCountByParentId(all: List<Comment>): Map<String, Int> {
+        val counts = mutableMapOf<String, Int>()
+        for (c in all) {
+            val parentId = c.parentCommentId
+            if (!parentId.isNullOrBlank()) {
+                counts[parentId] = (counts[parentId] ?: 0) + 1
+            }
+        }
+        return counts
+    }
+
+    private fun buildVisibleComments(all: List<Comment>, expandedIds: Set<String>): List<Comment> {
+        if (all.isEmpty()) return emptyList()
+
+        val indexById = all.mapIndexedNotNull { index, c ->
+            if (c.id.isBlank()) null else c.id to index
+        }.toMap()
+
+        val childrenByParent = all
+            .filter { !it.parentCommentId.isNullOrBlank() }
+            .groupBy { it.parentCommentId!! }
+            .mapValues { (_, children) ->
+                children.sortedBy { child -> indexById[child.id] ?: Int.MAX_VALUE }
+            }
+
+        val topLevel = all
+            .filter { it.parentCommentId.isNullOrBlank() || it.depth == 0 }
+            .sortedBy { c -> indexById[c.id] ?: Int.MAX_VALUE }
+
+        val result = mutableListOf<Comment>()
+        fun appendChildren(parent: Comment) {
+            if (!expandedIds.contains(parent.id)) return
+            val children = childrenByParent[parent.id].orEmpty()
+            for (child in children) {
+                result.add(child)
+                appendChildren(child)
+            }
+        }
+
+        for (root in topLevel) {
+            result.add(root)
+            appendChildren(root)
+        }
+
+        return result
     }
     
     /**

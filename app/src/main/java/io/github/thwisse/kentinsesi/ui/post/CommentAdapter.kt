@@ -1,6 +1,8 @@
 package io.github.thwisse.kentinsesi.ui.post
 
+import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -14,8 +16,22 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class CommentAdapter(
-    private val onCommentClick: ((Comment) -> Unit)? = null
+    private val onCommentClick: ((Comment) -> Unit)? = null,
+    private val onRepliesToggleClick: ((Comment) -> Unit)? = null
 ) : ListAdapter<Comment, CommentAdapter.CommentViewHolder>(CommentDiffCallback()) {
+
+    private var expandedCommentIds: Set<String> = emptySet()
+    private var childCountByParentId: Map<String, Int> = emptyMap()
+
+    fun setExpandedCommentIds(ids: Set<String>) {
+        expandedCommentIds = ids
+        notifyDataSetChanged()
+    }
+
+    fun setChildCountByParentId(map: Map<String, Int>) {
+        childCountByParentId = map
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
         val binding = ItemCommentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -65,9 +81,19 @@ class CommentAdapter(
 
             val density = binding.root.resources.displayMetrics.density
 
-            val baseHorizontalMargin = (12 * density).toInt()
+            val baseHorizontalMargin = if (comment.depth <= 0) 0 else (12 * density).toInt()
             val baseVerticalMargin = (6 * density).toInt()
             val indent = (comment.depth.coerceIn(0, Constants.MAX_COMMENT_DEPTH) * 12 * density).toInt()
+
+            val depth = comment.depth.coerceIn(0, 4)
+            val bg = when (depth) {
+                0 -> Color.parseColor("#E3F2FD") // pastel mavi
+                1 -> Color.parseColor("#FFEBEE") // pastel kirmizi
+                2 -> Color.parseColor("#E8F5E9") // pastel yesil
+                3 -> Color.parseColor("#F3E5F5") // pastel mor
+                else -> Color.parseColor("#FFFDE7") // pastel sari
+            }
+            binding.root.setCardBackgroundColor(bg)
 
             // Kartın kendisini sağa kaydır (kart daha küçük görünür), içerik padding'ini değil.
             val lp = binding.root.layoutParams
@@ -79,9 +105,25 @@ class CommentAdapter(
                 binding.root.layoutParams = lp
             }
 
+            val count = childCountByParentId[comment.id] ?: 0
+
+            // Sol alanın genişliği sabit kalsın: reply yoksa INVISIBLE (GONE değil)
+            binding.tvRepliesToggle.visibility = if (count > 0) View.VISIBLE else View.INVISIBLE
+            binding.tvRepliesToggle.text = "$count yanıt"
+            binding.tvRepliesToggle.setOnClickListener(null)
+
             val canReply = comment.depth < Constants.MAX_COMMENT_DEPTH
-            binding.root.isEnabled = canReply
+
+            // Kart click: aç/kapat
+            binding.root.isEnabled = true
             binding.root.setOnClickListener {
+                if (count > 0) onRepliesToggleClick?.invoke(comment)
+            }
+
+            // Alt sağ "Yanıtla": reply mode
+            binding.tvReplyAction.isEnabled = canReply
+            binding.tvReplyAction.alpha = if (canReply) 1f else 0.5f
+            binding.tvReplyAction.setOnClickListener {
                 if (canReply) onCommentClick?.invoke(comment)
             }
         }
