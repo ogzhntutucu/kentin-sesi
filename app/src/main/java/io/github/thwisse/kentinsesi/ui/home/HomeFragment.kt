@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.databinding.FragmentHomeBinding
@@ -52,21 +53,37 @@ class HomeFragment : Fragment() {
                         true
                     }
                     R.id.action_filter -> {
-                        // Mevcut filtre değerlerini ViewModel'den al
-                        val bundle = android.os.Bundle().apply {
-                            viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
-                            viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
-                            viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
-                        }
-
-                        // BottomSheet'i bu verilerle aç
-                        findNavController().navigate(R.id.action_homeFragment_to_filterBottomSheetFragment, bundle)
+                        showFilterChoiceDialog()
                         true
                     }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showFilterChoiceDialog() {
+        val items = arrayOf("Filtrelerim", "Yeni filtre ayarla")
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Filtre")
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> {
+                        Toast.makeText(requireContext(), "Filtrelerim ekranı yakında eklenecek", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        val bundle = android.os.Bundle().apply {
+                            viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
+                            viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
+                            viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
+                        }
+                        findNavController().navigate(R.id.action_homeFragment_to_filterBottomSheetFragment, bundle)
+                    }
+                }
+            }
+            .setNegativeButton("İptal", null)
+            .show()
     }
 
     // ViewModel ve Adapter tanımları

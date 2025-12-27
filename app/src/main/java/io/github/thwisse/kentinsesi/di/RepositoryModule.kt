@@ -8,6 +8,8 @@ import io.github.thwisse.kentinsesi.data.repository.AuthRepository // Interface 
 import io.github.thwisse.kentinsesi.data.repository.AuthRepositoryImpl // Implementasyon importu
 import io.github.thwisse.kentinsesi.data.repository.PostRepository
 import io.github.thwisse.kentinsesi.data.repository.PostRepositoryImpl
+import io.github.thwisse.kentinsesi.data.repository.FilterRepository
+import io.github.thwisse.kentinsesi.data.repository.FilterRepositoryImpl
 import io.github.thwisse.kentinsesi.data.repository.UserRepository
 import io.github.thwisse.kentinsesi.data.repository.UserRepositoryImpl
 import javax.inject.Singleton
@@ -36,4 +38,10 @@ abstract class RepositoryModule {
     abstract fun bindPostRepository(
         postRepositoryImpl: PostRepositoryImpl
     ): PostRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFilterRepository(
+        filterRepositoryImpl: FilterRepositoryImpl
+    ): FilterRepository
 }

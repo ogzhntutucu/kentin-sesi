@@ -10,6 +10,7 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -75,12 +76,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
                         true
                     }
                     R.id.action_filter -> {
-                        val bundle = Bundle().apply {
-                            viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
-                            viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
-                            viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
-                        }
-                        findNavController().navigate(R.id.action_nav_map_to_filterBottomSheetFragment, bundle)
+                        showFilterChoiceDialog()
                         true
                     }
                     R.id.action_all_posts -> {
@@ -107,6 +103,30 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showFilterChoiceDialog() {
+        val items = arrayOf("Filtrelerim", "Yeni filtre ayarla")
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Filtre")
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> {
+                        Toast.makeText(requireContext(), "Filtrelerim ekranı yakında eklenecek", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        val bundle = Bundle().apply {
+                            viewModel.lastDistricts?.let { putStringArrayList("districts", ArrayList(it)) }
+                            viewModel.lastCategories?.let { putStringArrayList("categories", ArrayList(it)) }
+                            viewModel.lastStatuses?.let { putStringArrayList("statuses", ArrayList(it)) }
+                        }
+                        findNavController().navigate(R.id.action_nav_map_to_filterBottomSheetFragment, bundle)
+                    }
+                }
+            }
+            .setNegativeButton("İptal", null)
+            .show()
     }
 
     private fun setupFilterResultListener() {

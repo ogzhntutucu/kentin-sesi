@@ -6,16 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.thwisse.kentinsesi.data.model.Post
+import io.github.thwisse.kentinsesi.data.model.FilterCriteria
 import io.github.thwisse.kentinsesi.data.repository.AuthRepository
+import io.github.thwisse.kentinsesi.data.repository.FilterRepository
 import io.github.thwisse.kentinsesi.data.repository.PostRepository
 import io.github.thwisse.kentinsesi.util.Resource
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val authRepository: AuthRepository // YENİ: ID için bunu ekledik
+    private val authRepository: AuthRepository, // YENİ: ID için bunu ekledik
+    private val filterRepository: FilterRepository
 ) : ViewModel() {
 
     private val _postsState = MutableLiveData<Resource<List<Post>>>()
@@ -34,7 +38,21 @@ class HomeViewModel @Inject constructor(
         private set
 
     init {
-        getPosts()
+        viewModelScope.launch {
+            filterRepository.ensureSystemDefaultExists()
+
+            val presetId = filterRepository.observeLastAppliedPresetId().first()
+            val preset = presetId?.let { filterRepository.getPresetById(it) }
+
+            val criteria = when {
+                preset != null -> preset.criteria
+                else -> filterRepository.observeLastCriteria().first()
+                    ?: filterRepository.getDefaultPreset()?.criteria
+                    ?: FilterCriteria()
+            }
+
+            applyCriteriaInternal(criteria)
+        }
     }
 
     // Verileri getiren fonksiyon
@@ -43,16 +61,28 @@ class HomeViewModel @Inject constructor(
         categories: List<String>? = null,
         statuses: List<String>? = null
     ) {
-        // Gelen filtreleri hafızaya kaydet
-        lastDistricts = districts
-        lastCategories = categories
-        lastStatuses = statuses
+        val criteria = FilterCriteria(
+            districts = districts.orEmpty(),
+            categories = categories.orEmpty(),
+            statuses = statuses.orEmpty()
+        )
 
         viewModelScope.launch {
-            _postsState.value = Resource.Loading()
-            val result = postRepository.getPosts(districts, categories, statuses)
-            _postsState.value = result
+            // Ad-hoc filtre uygulandıysa preset seçimi yok sayılır
+            filterRepository.setLastAppliedPresetId(null)
+            filterRepository.setLastCriteria(criteria)
+            applyCriteriaInternal(criteria)
         }
+    }
+
+    private suspend fun applyCriteriaInternal(criteria: FilterCriteria) {
+        lastDistricts = criteria.districts.takeIf { it.isNotEmpty() }
+        lastCategories = criteria.categories.takeIf { it.isNotEmpty() }
+        lastStatuses = criteria.statuses.takeIf { it.isNotEmpty() }
+
+        _postsState.value = Resource.Loading()
+        val result = postRepository.getPosts(lastDistricts, lastCategories, lastStatuses)
+        _postsState.value = result
     }
 
     // Mevcut filtrelerle yenileme yap
