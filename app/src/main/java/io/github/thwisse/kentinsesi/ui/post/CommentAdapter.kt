@@ -44,7 +44,10 @@ class CommentAdapter(
 
     inner class CommentViewHolder(private val binding: ItemCommentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
-            val fullName = comment.authorFullName.ifBlank { "Anonim" }
+            val context = binding.root.context
+            val fullName = comment.authorFullName.ifBlank {
+                context.getString(io.github.thwisse.kentinsesi.R.string.anonymous_user)
+            }
             val username = comment.authorUsername.trim().takeIf { it.isNotBlank() }
             binding.tvAuthorFullName.text = if (username != null) {
                 "$fullName (@$username)"
@@ -68,7 +71,7 @@ class CommentAdapter(
 
             binding.tvReplyingTo.isVisible = !replyTo.isNullOrBlank()
             binding.tvReplyingTo.text = if (!replyTo.isNullOrBlank()) {
-                "${replyTo} kişisine yanıt"
+                context.getString(io.github.thwisse.kentinsesi.R.string.reply_to_person, replyTo)
             } else {
                 ""
             }
@@ -79,7 +82,7 @@ class CommentAdapter(
                 val format = SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault())
                 binding.tvCommentDate.text = format.format(date)
             } else {
-                binding.tvCommentDate.text = "Az önce"
+                binding.tvCommentDate.text = context.getString(io.github.thwisse.kentinsesi.R.string.just_now)
             }
 
             val density = binding.root.resources.displayMetrics.density
@@ -112,7 +115,7 @@ class CommentAdapter(
 
             // Sol alanın genişliği sabit kalsın: reply yoksa INVISIBLE (GONE değil)
             binding.tvRepliesToggle.visibility = if (count > 0) View.VISIBLE else View.INVISIBLE
-            binding.tvRepliesToggle.text = "$count yanıt"
+            binding.tvRepliesToggle.text = context.getString(io.github.thwisse.kentinsesi.R.string.replies_count, count)
             binding.tvRepliesToggle.setOnClickListener {
                 if (count > 0) onRepliesToggleClick?.invoke(comment)
             }

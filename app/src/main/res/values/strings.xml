@@ -10,4 +10,20 @@
     <string name="harita">Harita</string>
     <string name="bildirimler">Bildirimler</string>
     <string name="profil">Profil</string>
+
+    <string name="location_selected">Konum Seçildi: %1$.4f, %2$.4f</string>
+    <string name="post_support_count">%1$d Destek</string>
+    <string name="post_comment_count">%1$d Yorum</string>
+    <string name="post_location_city_district">Hatay, %1$s</string>
+    <string name="post_status_new">Yeni</string>
+    <string name="post_status_in_progress">İşlemde</string>
+    <string name="post_status_resolved">Çözüldü</string>
+
+    <string name="anonymous_user">Anonim</string>
+    <string name="reply_to_person">%1$s kişisine yanıt</string>
+    <string name="replies_count">%1$d yanıt</string>
+    <string name="just_now">Az önce</string>
+    <string name="reply_write_hint">Yanıt yaz…</string>
+    <string name="comment_write_hint">Bir yorum yaz…</string>
+    <string name="comments_header">Yorumlar (%1$d yorum)</string>
 </resources>

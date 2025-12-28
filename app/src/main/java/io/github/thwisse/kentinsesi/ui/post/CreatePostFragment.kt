@@ -90,7 +90,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
         
         // State restore: Konum bilgisi varsa göster
         if (currentLatitude != null && currentLongitude != null) {
-            binding.tvLocationInfo.text = "Konum Seçildi: ${String.format("%.4f", currentLatitude)}, ${String.format("%.4f", currentLongitude)}"
+            binding.tvLocationInfo.text = getString(R.string.location_selected, currentLatitude, currentLongitude)
             binding.tvLocationInfo.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
         }
     }
@@ -131,7 +131,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             currentLongitude = lng
 
             // UI güncelle
-            binding.tvLocationInfo.text = "Konum Seçildi: ${String.format("%.4f", lat)}, ${String.format("%.4f", lng)}"
+            binding.tvLocationInfo.text = getString(R.string.location_selected, lat, lng)
             // İkonun rengini değiştirebiliriz ki seçildiği belli olsun (Opsiyonel)
             binding.tvLocationInfo.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
         }

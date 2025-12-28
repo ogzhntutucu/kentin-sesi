@@ -24,19 +24,20 @@ class PostAdapter(
 
     inner class PostViewHolder(private val binding: ItemPostBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(post: Post) {
+            val context = binding.root.context
             binding.apply {
                 tvTitle.text = post.title
                 tvCategory.text = post.category
-                tvUpvoteCount.text = "${post.upvoteCount} Destek"
-                tvCommentCount.text = "${post.commentCount} Yorum"
+                tvUpvoteCount.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_support_count, post.upvoteCount)
+                tvCommentCount.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_comment_count, post.commentCount)
 
-                tvLocation.text = "Hatay, ${post.district ?: "-"}"
+                tvLocation.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_location_city_district, post.district ?: "-")
 
                 // Durum metni
                 tvStatus.text = when(post.status) {
-                    "new" -> "Yeni"
-                    "in_progress" -> "İşlemde"
-                    "resolved" -> "Çözüldü"
+                    "new" -> context.getString(io.github.thwisse.kentinsesi.R.string.post_status_new)
+                    "in_progress" -> context.getString(io.github.thwisse.kentinsesi.R.string.post_status_in_progress)
+                    "resolved" -> context.getString(io.github.thwisse.kentinsesi.R.string.post_status_resolved)
                     else -> post.status
                 }
 

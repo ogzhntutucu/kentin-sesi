@@ -11,6 +11,7 @@ import coil.load
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.thwisse.kentinsesi.R
 import io.github.thwisse.kentinsesi.data.model.Post
 import io.github.thwisse.kentinsesi.data.model.PostStatus
 import io.github.thwisse.kentinsesi.databinding.FragmentPostDetailBinding
@@ -154,8 +155,8 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         val name = comment.authorFullName
             .ifBlank { comment.authorFullName }
             .ifBlank { "-" }
-        binding.tvReplyBannerText.text = "${name} kişisine yanıt"
-        binding.etComment.hint = "Yanıt yaz..."
+        binding.tvReplyBannerText.text = getString(R.string.reply_to_person, name)
+        binding.etComment.hint = getString(R.string.reply_write_hint)
         binding.etComment.requestFocus()
     }
 
@@ -163,7 +164,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         replyingTo = null
         binding.replyBanner.isVisible = false
         binding.tvReplyBannerText.text = ""
-        binding.etComment.hint = "Bir yorum yaz..."
+        binding.etComment.hint = getString(R.string.comment_write_hint)
     }
 
     private fun hideKeyboardAndClearInputFocus() {
@@ -229,7 +230,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         setupComments()
         setupOfficialActions()
 
-        binding.tvCommentsHeader.text = "Yorumlar (${post.commentCount} yorum)"
+        binding.tvCommentsHeader.text = getString(R.string.comments_header, post.commentCount)
         
         // Menü kurulumu
         setupOwnerMenu()
