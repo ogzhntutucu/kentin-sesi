@@ -1,513 +1,211 @@
-# 📊 Kentin Sesi - Proje Analiz Raporu
-
-**Tarih:** 2025  
-**Proje Durumu:** Geliştirme Aşaması  
-**Genel Değerlendirme:** ⭐⭐⭐⭐ (4/5) - İyi bir temel, bazı iyileştirmeler gerekiyor
-
----
-
-## 📋 İçindekiler
-
-1. [Genel Değerlendirme](#genel-değerlendirme)
-2. [Kritik Sorunlar (Yüksek Öncelik)](#kritik-sorunlar-yüksek-öncelik)
-3. [Önemli İyileştirmeler (Orta Öncelik)](#önemli-iyileştirmeler-orta-öncelik)
-4. [İyi Uygulamalar](#iyi-uygulamalar)
-5. [Öneriler ve Best Practices](#öneriler-ve-best-practices)
-6. [Öncelik Sıralaması](#öncelik-sıralaması)
-
----
-
-## 🎯 Genel Değerlendirme
-
-### Güçlü Yönler ✅
-- ✅ **Mimari:** MVVM + Repository pattern doğru uygulanmış
-- ✅ **Dependency Injection:** Hilt düzgün kullanılmış
-- ✅ **State Management:** Resource wrapper pattern kullanılmış
-- ✅ **Firebase Security Rules:** Güvenlik kuralları mevcut
-- ✅ **Kod Organizasyonu:** Paket yapısı mantıklı
-- ✅ **Type Safety:** Enum kullanımı iyi
-- ✅ **Validation:** ValidationUtils merkezi hale getirilmiş
-
-### Zayıf Yönler ⚠️
-- ❌ **Test Coverage:** Test yok (kritik)
-- ❌ **Image Compression:** Resim sıkıştırma yok
-- ❌ **Error Handling:** Bazı yerlerde genel Exception yakalanıyor
-- ❌ **Logging:** Standart logging sistemi yok
-- ❌ **Network Monitoring:** İnternet kontrolü yok
-- ❌ **Pagination:** Firestore pagination yok
-- ❌ **Caching:** Offline destek yok
-
----
-
-## 🚨 Kritik Sorunlar (Yüksek Öncelik)
-
-### 1. **Resim Sıkıştırma Eksik** 🔴
-**Konum:** `PostRepositoryImpl.createPost()`
-
-**Sorun:**
-```kotlin
-// Şu anki kod - Resim direkt yükleniyor, sıkıştırma yok
-storageRef.putFile(imageUri).await()
-```
-
-**Etki:**
-- Büyük resimler yavaş yüklenir
-- Storage maliyeti artar
-- Kullanıcı deneyimi kötüleşir
-- Constants'ta `MAX_IMAGE_SIZE_MB = 5` ve `IMAGE_COMPRESSION_QUALITY = 85` tanımlı ama kullanılmıyor
-
-**Çözüm:**
-- Bitmap compression utility ekle
-- Resim boyutunu kontrol et
-- Sıkıştırma yap (JPEG quality: 85)
-- Max boyut kontrolü yap
-
----
-
-### 2. **Storage Temizliği Eksik** 🔴
-**Konum:** `PostRepositoryImpl.deletePost()`
-
-**Sorun:**
-```kotlin
-// 2. (Opsiyonel ama iyi olur) Storage'dan resmi de silmek gerekir.
-// Bunun için postu çekerken imagePath'i de kaydetmemiz gerekirdi.
-// Şimdilik sadece veritabanından silelim, storage temizliği ilerde yapılır.
-```
-
-**Etki:**
-- Silinen postların resimleri storage'da kalır
-- Storage maliyeti gereksiz artar
-- Orphaned files oluşur
-
-**Çözüm:**
-- Post modeline `imagePath` veya `storagePath` ekle
-- Delete işleminde hem Firestore hem Storage'dan sil
-
----
-
-### 3. **Test Coverage Sıfır** 🔴
-**Konum:** Tüm proje
-
-**Sorun:**
-- Sadece template test dosyaları var
-- Hiçbir unit test yok
-- Hiçbir instrumented test yok
-
-**Etki:**
-- Refactoring riskli
-- Regression bug'lar tespit edilemez
-- Kod kalitesi garantisi yok
-
-**Çözüm:**
-- Repository testleri (Mock Firebase)
-- ViewModel testleri
-- Utility testleri (ValidationUtils, AuthorizationUtils)
-- UI testleri (Espresso)
-
----
-
-### 4. **Genel Exception Yakalama** 🔴
-**Konum:** Tüm Repository'ler
-
-**Sorun:**
-```kotlin
-catch (e: Exception) {
-    Resource.Error(e.message ?: "Hata")
-}
-```
-
-**Etki:**
-- Hata mesajları kullanıcıya uygun değil
-- Debug zor
-- Firebase özel hataları yakalanmıyor
-
-**Çözüm:**
-- Spesifik exception handling
-- Firebase exception'ları ayrı handle et
-- Network exception'ları ayrı handle et
-- Kullanıcı dostu hata mesajları
-
----
-
-### 5. **Network Connectivity Kontrolü Yok** 🔴
-**Konum:** Tüm Repository'ler
-
-**Sorun:**
-- İnternet kontrolü yapılmıyor
-- Offline durumda kullanıcıya bilgi verilmiyor
-
-**Etki:**
-- Gereksiz API çağrıları
-- Kullanıcı deneyimi kötü
-- Hata mesajları belirsiz
-
-**Çözüm:**
-- ConnectivityManager kullan
-- Network state check utility
-- Offline durumda uygun mesaj göster
-
----
-
-### 6. **Pagination Eksik** 🟡
-**Konum:** `PostRepositoryImpl.getPosts()`
-
-**Sorun:**
-```kotlin
-// Tüm postları tek seferde çekiyor
-.get().await()
-```
-
-**Etki:**
-- Büyük veri setlerinde performans sorunu
-- İlk yükleme yavaş
-- Memory kullanımı yüksek
-- Firestore read cost artar
-
-**Çözüm:**
-- Firestore pagination ekle (startAfter, limit)
-- Infinite scroll veya "Daha Fazla" butonu
-- Constants'ta `POSTS_PAGE_SIZE = 20` tanımlı ama kullanılmıyor
-
----
-
-## ⚠️ Önemli İyileştirmeler (Orta Öncelik)
-
-### 7. **Logging Sistemi Eksik** 🟡
-**Konum:** Tüm proje
-
-**Sorun:**
-- `android.util.Log` direkt kullanılıyor
-- Production'da log'lar görünür
-- Log seviyesi kontrolü yok
-- Structured logging yok
-
-**Mevcut Kullanım:**
-```kotlin
-android.util.Log.e("HomeViewModel", "toggleUpvote: userId boş")
-Log.d("LoginFragment", "Giriş başarılı!")
-```
-
-**Çözüm:**
-- Timber veya custom logging wrapper
-- Build variant'a göre log seviyesi
-- Production'da log'ları kapat
-- Tag'leri merkezileştir
-
----
-
-### 8. **Hardcoded Strings** 🟡
-**Konum:** Fragment'lar, Adapter'lar
-
-**Sorun:**
-```kotlin
-// PostAdapter.kt
-tvStatus.text = when(post.status) {
-    "new" -> "Yeni"
-    "in_progress" -> "İşlemde"
-    "resolved" -> "Çözüldü"
-    else -> post.status
-}
-```
-
-**Etki:**
-- Çoklu dil desteği zor
-- String'ler merkezi değil
-- Hata riski yüksek
-
-**Çözüm:**
-- strings.xml'e taşı
-- String resources kullan
-- Çoklu dil desteği için hazırlık
-
----
-
-### 9. **TODO Comment Kaldırılmalı** 🟡
-**Konum:** `RepositoryModule.kt`
-
-**Sorun:**
-```kotlin
-// TODO: Adım X'te PostRepository için @Binds metodu buraya eklenecek.
-```
-
-**Not:** Aslında PostRepository bind edilmiş, TODO eski kalmış.
-
-**Çözüm:**
-- TODO'yu kaldır
-
----
-
-### 10. **Comment DiffCallback Sorunu** 🟡
-**Konum:** `CommentAdapter.kt`
-
-**Sorun:**
-```kotlin
-override fun areItemsTheSame(oldItem: Comment, newItem: Comment): Boolean = false
-```
-
-**Etki:**
-- DiffUtil düzgün çalışmaz
-- RecyclerView performansı düşer
-- Animasyonlar bozulur
-
-**Çözüm:**
-- Comment modeline proper ID ekle
-- `areItemsTheSame` düzelt
-
----
-
-### 11. **ProGuard Rules Eksik** 🟡
-**Konum:** `proguard-rules.pro`
-
-**Sorun:**
-- Sadece template var
-- Firebase, Hilt, Coil için rules yok
-- Release build'de crash riski
-
-**Çözüm:**
-- Firebase ProGuard rules ekle
-- Hilt rules ekle
-- Coil rules ekle
-- Model class'ları için keep rules
-
----
-
-### 12. **State Restore İyileştirmeleri** 🟡
-**Konum:** Fragment'lar
-
-**Sorun:**
-- Bazı Fragment'larda state restore eksik
-- ViewModel'de state restore yok
-- Process death sonrası veri kaybı riski
-
-**Çözüm:**
-- SavedStateHandle kullan
-- ViewModel'de state restore
-- Tüm kritik state'leri kaydet
-
----
-
-### 13. **Error Handling İyileştirmeleri** 🟡
-**Konum:** Fragment'lar
-
-**Sorun:**
-- Toast mesajları her yerde
-- Error state UI yok
-- Retry mekanizması yok
-
-**Çözüm:**
-- Error state UI ekle
-- Retry butonu ekle
-- Snackbar kullan (Toast yerine)
-- Error handling merkezileştir
-
----
-
-### 14. **Loading State İyileştirmeleri** 🟡
-**Konum:** Fragment'lar
-
-**Sorun:**
-- Bazı yerlerde loading state eksik
-- Loading UI tutarsız
-- Skeleton loading yok
-
-**Çözüm:**
-- Skeleton loading ekle
-- Loading state'leri standardize et
-- Shimmer effect ekle
-
----
-
-### 15. **Firestore Index Eksik** 🟡
-**Sorun:**
-- Composite query'ler için index gerekebilir
-- `getPosts()` fonksiyonunda filtreleme yapılıyor
-- Firestore index tanımlı değil
-
-**Etki:**
-- Production'da query hataları olabilir
-- Performans sorunları
-
-**Çözüm:**
-- `firestore.indexes.json` ekle
-- Gerekli index'leri tanımla
-
----
-
-## ✅ İyi Uygulamalar
-
-1. ✅ **MVVM Pattern:** Doğru uygulanmış
-2. ✅ **Repository Pattern:** Interface + Implementation
-3. ✅ **Resource Wrapper:** Sealed class ile state management
-4. ✅ **Dependency Injection:** Hilt düzgün kullanılmış
-5. ✅ **Type Safety:** Enum kullanımı
-6. ✅ **Constants:** Merkezi constant yönetimi
-7. ✅ **Validation:** ValidationUtils merkezi
-8. ✅ **Authorization:** AuthorizationUtils merkezi
-9. ✅ **Firebase Security Rules:** Mevcut ve iyi yazılmış
-10. ✅ **Navigation Component:** Doğru kullanılmış
-11. ✅ **ViewBinding:** Tüm Fragment'larda kullanılmış
-12. ✅ **Coil:** Modern image loading library
-13. ✅ **State Restore:** Bazı Fragment'larda mevcut
-
----
-
-## 💡 Öneriler ve Best Practices
-
-### 16. **Offline Support** 💡
-- Firestore offline persistence enable et
-- Cache mekanizması ekle
-- Sync indicator ekle
-
-### 17. **Analytics** 💡
-- Firebase Analytics event'leri ekle
-- User journey tracking
-- Error tracking (Crashlytics)
-
-### 18. **Performance Monitoring** 💡
-- Firebase Performance Monitoring
-- App startup time tracking
-- Network request monitoring
-
-### 19. **Code Quality Tools** 💡
-- Detekt ekle (static analysis)
-- Ktlint ekle (code formatting)
-- Pre-commit hooks
-
-### 20. **Documentation** 💡
-- KDoc ekle (public API'ler için)
-- Architecture decision records
-- README güncelle
-
-### 21. **CI/CD** 💡
-- GitHub Actions / GitLab CI
-- Automated testing
-- Automated deployment
-
-### 22. **Security** 💡
-- API key'leri güvenli sakla
-- ProGuard/R8 enable et (release)
-- Certificate pinning (opsiyonel)
-
-### 23. **Accessibility** 💡
-- Content descriptions ekle
-- TalkBack desteği
-- Color contrast kontrolü
-
-### 24. **Localization** 💡
-- strings.xml'e taşı
-- Çoklu dil desteği hazırlığı
-- Date/time formatting (Locale)
-
----
-
-## 📊 Öncelik Sıralaması
-
-### 🔴 Yüksek Öncelik (Hemen Yapılmalı)
-1. **Resim Sıkıştırma** - Performans ve maliyet
-2. **Storage Temizliği** - Maliyet ve veri tutarlılığı
-3. **Network Connectivity Kontrolü** - UX
-4. **Genel Exception Handling İyileştirmesi** - Hata yönetimi
-5. **ProGuard Rules** - Release build güvenliği
-
-### 🟡 Orta Öncelik (Yakın Zamanda)
-6. **Pagination** - Performans
-7. **Logging Sistemi** - Debug ve monitoring
-8. **Hardcoded Strings** - Localization hazırlığı
-9. **Comment DiffCallback** - RecyclerView performansı
-10. **Error Handling UI** - UX iyileştirmesi
-11. **Firestore Index** - Production hazırlığı
-
-### 💡 Düşük Öncelik (İleride)
-12. **Test Coverage** - Uzun vadeli kalite
-13. **Offline Support** - Özellik
-14. **Analytics** - Monitoring
-15. **CI/CD** - Otomasyon
-
----
-
-## 📈 Proje Durumu Özeti
-
-### Mevcut Durum: **%70 Tamamlanmış**
-
-**Tamamlanan:**
-- ✅ Temel mimari
-- ✅ Authentication
-- ✅ Post CRUD
-- ✅ Upvote sistemi
-- ✅ Filtreleme
-- ✅ Harita entegrasyonu
-- ✅ Yorum sistemi
-- ✅ Admin paneli
-- ✅ Profil yönetimi
-
-**Eksikler:**
-- ❌ Test coverage
-- ❌ Resim optimizasyonu
-- ❌ Pagination
-- ❌ Offline support
-- ❌ Analytics
-- ❌ Notifications (UI var ama boş)
-
-**Sonraki Adımlar:**
-1. Kritik sorunları çöz (Yüksek öncelik)
-2. Orta öncelikli iyileştirmeler
-3. Test coverage ekle
-4. Production hazırlığı
-
----
-
-## 🎯 Sonuç
-
-Proje **sağlam bir temel** üzerine kurulmuş. Mimari doğru, kod organizasyonu iyi, güvenlik kuralları mevcut. Ancak **production-ready** olmak için yukarıdaki iyileştirmelerin yapılması gerekiyor.
-
-**Önerilen Yaklaşım:**
-1. Önce kritik sorunları çöz (1-2 hafta)
-2. Sonra orta öncelikli iyileştirmeler (2-3 hafta)
-3. Test coverage ekle (sürekli)
-4. Production hazırlığı (1 hafta)
-
-**Genel Not:** ⭐⭐⭐⭐ (4/5) - İyi bir proje, iyileştirmelerle production-ready olabilir.
-
----
-
-*Rapor Tarihi: 2025*  
-*Hazırlayan: AI Code Assistant*
- 
- 
- 
- 
-
----
-
-## 🧩 Ek Notlar (Cascade Analizi) — Sonradan Ele Alınacaklar
-
-**Tarih:** 2025-12-26  
-**Not:** Aşağıdaki maddeler “şu an değil, sonra” ele alınmak üzere eklenmiştir.
-
-### 1) Post ID alanı tutarsızlığı (id vs postId) — Yüksek risk
-- **Gözlem:** `Post` modelinde hem `id` hem `@DocumentId postId` var. Navigation ve repo çağrıları bazı yerlerde `id`, bazı yerlerde `postId` kullanıyor.
-- **Risk:** Detaya geçiş / upvote / state-restore gibi yerlerde yanlış/boş ID ile işlem yapılması.
-- **Öneri:** Tek bir “kanonik post id” yaklaşımı belirlenip tüm kod tabanında standardize edilmeli.
-
-### 2) Kategori / ilçe değerlerinin standardı (UI label vs canonical code)
-- **Gözlem:** UI tarafında Türkçe kategori/ilçe listeleri hardcoded. `Constants` tarafında ise kategori için farklı “code” değerleri var.
-- **Risk:** Filtreleme / istatistik / çoklu dil / analitik gibi alanlarda veri tutarsızlığı.
-- **Öneri:** Firestore’da saklanan değer formatı netleştirilmeli (label mı code mu), tek format kullanılmalı.
-
-### 3) Yetkilendirme akışı (citizen/official/admin) ve sunucu tarafı
-- **Gözlem:** UI/ViewModel tarafında `AuthorizationUtils` ile menü/aksiyon kısıtları var; fakat asıl kritik olan Firestore Security Rules tarafında aynı mantığın garanti edilmesi.
-- **Risk:** Sadece UI kontrolü ile yetkisiz işlemler teorik olarak mümkün olabilir.
-- **Öneri:** Yetki modeli ve rules tarafı birlikte gözden geçirilmeli.
-
-### 4) CreatePost -> district seçimi validasyonu
-- **Gözlem:** `CreatePostFragment` içinde `district` boş geçebiliyor gibi (kategori zorunlu kontrol edilmiş; ilçe için aynı net kontrol görünmüyor).
-- **Öneri:** Post oluşturma formunda ilçe zorunluluğu netleştirilmeli (ürün kararına göre).
-
-### 5) Harita/Detay ekranlarında postId aktarımı
-- **Gözlem:** `MapFragment` ve `HomeFragment` detaya giderken `post.id` gönderiyor.
-- **Risk:** Post listesi Firestore’dan `@DocumentId` ile dolduruluyorsa `id` boş kalabilir.
-- **Öneri:** Detaya giderken “kanonik post id” gönderilmeli.
-
----
-
-*Ek Notlar Hazırlayan: Cascade*
+ # Kentin Sesi — Proje Analiz Raporu (Güncel)
+
+ **Tarih:** 2025-12-28  
+ **Kapsam:** Kod tabanı + Gradle + Firestore rules + UI katmanı  
+ **Hedef:** Projeyi sektör standartlarında, sürdürülebilir ve production-ready bir yapıya yaklaştırmak
+
+ ---
+
+ ## 1) Kısa Özet (Executive Summary)
+
+ Proje, MVVM + Repository + Hilt temelleri açısından **doğru yolda**. Firestore kuralları var ve yakın zamanda şema temizliği yapılmış.
+
+ Ancak şu anda production standardı için en büyük riskler:
+
+ - **[Performans/Maliyet]** Görsel yükleme tarafında **sıkıştırma yok** (`putFile(imageUri)` direkt).  
+ - **[Maliyet/Bakım]** Post silmede **Storage temizliği yok** (orphan file riski).  
+ - **[Release Readiness]** **R8/ProGuard kapalı** (`isMinifyEnabled=false`) ve `proguard-rules.pro` template.  
+ - **[Ölçeklenebilirlik]** `getPosts()` çoğu senaryoda **tam liste çekip client-side filtreliyor** (pagination yok).  
+ - **[DX/Observability]** Logging standardı yok, çok yerde `Log.*` var.  
+ - **[Kalite]** Test coverage pratikte yok.
+
+ ---
+
+ ## 2) Doğrulama: Eski Rapordaki Maddeler Ne Kadar Güncel?
+
+ ### 2.1 Artık Geçersiz (Çözülmüş / Güncellenmiş)
+
+ - **[Comment DiffUtil sorunu]** Artık geçersiz.
+   - **Kanıt:** `CommentAdapter.CommentDiffCallback.areItemsTheSame()` artık `oldItem.id == newItem.id` kullanıyor.
+
+ - **[Post ID tutarsızlığı (id vs postId)]** Büyük ölçüde çözülmüş.
+   - **Kanıt:** `Post` modelinde kanonik alan `@DocumentId val id` ve repository tarafında boş gelirse `doc.id` fallback mevcut.
+
+ ### 2.2 Hala Geçerli (Bugün de doğru)
+
+ - **[Image compression yok]** Geçerli.
+   - **Kanıt:** `PostRepositoryImpl.createPost()` -> `storageRef.putFile(imageUri).await()`.
+   - **Not:** `Constants.MAX_IMAGE_SIZE_MB` ve `Constants.IMAGE_COMPRESSION_QUALITY` tanımlı ama kullanılmıyor.
+
+ - **[Storage cleanup yok]** Geçerli.
+   - **Kanıt:** `PostRepositoryImpl.deletePost()` sadece Firestore delete, Storage için TODO yorumları var.
+
+ - **[Pagination yok]** Geçerli.
+   - **Kanıt:** `getPosts()` birçok dalda `.get().await()` ile tüm sonuçları çekiyor.
+   - **Not:** `Constants.POSTS_PAGE_SIZE` tanımlı ama kullanılmuyor.
+
+ - **[R8/ProGuard rules eksik / minify kapalı]** Geçerli.
+   - **Kanıt:** `app/build.gradle.kts` -> `release { isMinifyEnabled = false }`.
+   - **Kanıt:** `app/proguard-rules.pro` template.
+
+ - **[Hardcoded strings]** Geçerli.
+   - **Kanıt:** `PostAdapter` durum label’ları (`"new" -> "Yeni"` vb.).
+
+ - **[Logging standardı yok]** Geçerli.
+   - **Kanıt:** Projede birden fazla yerde `Log.*` kullanımı mevcut.
+
+ - **[Genel Exception yakalama]** Geçerli.
+   - **Kanıt:** Repository’lerde `catch (e: Exception)` + `Resource.Error(e.message ?: ...)` paterni yaygın.
+
+ - **[Offline persistence / caching]** Geçerli.
+   - **Kanıt:** Firestore settings / offline persistence enable eden bir konfig bulunamadı.
+
+ ---
+
+ ## 3) Mevcut Mimari Fotoğrafı (As-Is)
+
+ - **UI:** Fragment tabanlı + ViewBinding + Navigation Component.
+ - **State:** ViewModel’ler + `Resource<T>` wrapper + LiveData/Flow karışık kullanım.
+ - **DI:** Hilt (Firebase ve repository binding’leri modüllerde).
+ - **Data sources:**
+   - Firestore (posts/users/comments/usernames)
+   - Firebase Storage (post görselleri)
+   - Room (filter preset)
+   - DataStore (son filtre kriterleri / preset seçimi)
+
+ ---
+
+ ## 4) Bulgular ve Öneriler (Öncelikli)
+
+ Aşağıdaki maddelerde format standardı:
+
+ - **[Durum]** Mevcut mu?
+ - **[Etki]** Neyi bozuyor / risk?
+ - **[Öneri]** Ne yapılmalı?
+ - **[Efor]** S / M / L (tahmini)
+
+ ### 4.1 Performans / Maliyet (Yüksek Öncelik)
+
+ 1) **Görsel sıkıştırma/yeniden boyutlandırma yok**
+ - **Durum:** Mevcut.
+ - **Etki:** Upload süresi + Storage maliyeti + ağ kullanımı artar.
+ - **Öneri:**
+   - `Uri` -> bitmap decode + downscale + JPEG compress (`IMAGE_COMPRESSION_QUALITY`)
+   - 5MB üstü dosyaları reddet veya yeniden boyutlandır.
+ - **Efor:** M
+
+ 2) **Post silmede Storage dosyası temizlenmiyor (orphan file)**
+ - **Durum:** Mevcut.
+ - **Etki:** Storage maliyeti kontrolsüz büyür; veri hijyeni bozulur.
+ - **Öneri:**
+   - Post dokümanına `imageStoragePath` (veya fileName) yaz.
+   - Delete akışında önce Storage delete (best-effort) + sonra Firestore delete (veya tersi; hata senaryolarını tasarla).
+ - **Efor:** M
+
+ 3) **Posts listeleme ölçeklenmiyor (pagination yok + client-side filtreleme)**
+ - **Durum:** Mevcut.
+ - **Etki:** Read cost ve RAM artar; büyük veri setinde UI yavaşlar.
+ - **Öneri:**
+   - Basit: tarih sıralı `limit(POSTS_PAGE_SIZE)` + `startAfter(lastDoc)` pagination.
+   - Filtre stratejisi: tek `whereIn` limitine takılmamak için “query modeli” netleştir (ya server-side index ile kısıtla ya da filtreleri yeniden tasarla).
+ - **Efor:** L
+
+ ### 4.2 Release Readiness (Yüksek Öncelik)
+
+ 4) **Release build’te minify kapalı + ProGuard rules boş**
+ - **Durum:** Mevcut (`isMinifyEnabled=false`).
+ - **Etki:** APK boyutu büyür; reverse engineering daha kolay; bazı optimizasyonlar kaçırılır.
+ - **Öneri:**
+   - Önce staging/release variant’ı ayır, minify’ı kademeli aç.
+   - Firebase/Hilt/Room için gerekli keep rules ekle (dokümantasyondan).
+ - **Efor:** M
+
+ ### 4.3 Hata Yönetimi / Kullanıcı Deneyimi (Orta-Yüksek)
+
+ 5) **Genel `Exception` yakalama + kullanıcıya ham mesaj**
+ - **Durum:** Mevcut.
+ - **Etki:** UX zayıf; debug zor; hatalar sınıflandırılamıyor.
+ - **Öneri:**
+   - Domain seviyesinde hata modeli: `sealed class AppError` (Network/Auth/Permission/Validation/Unknown)
+   - Firebase exception’larını map et (permission-denied vb.).
+ - **Efor:** M
+
+ 6) **Network/offline durumu yönetimi zayıf**
+ - **Durum:** Mevcut.
+ - **Etki:** Offline senaryoda belirsiz hata; retry/queue davranışı yok.
+ - **Öneri:**
+   - Basit: connectivity check + kullanıcıya “offline” state.
+   - Gelişmiş: Firestore offline persistence + UI’da sync/queue göstergesi.
+ - **Efor:** S→M
+
+ ### 4.4 Kod Kalitesi / Sürdürülebilirlik (Orta)
+
+ 7) **Hardcoded UI string’ler**
+ - **Durum:** Mevcut (`PostAdapter` status label).
+ - **Etki:** Lokalizasyon zor; tek noktadan yönetim yok.
+ - **Öneri:** `strings.xml` + mapping (örn. `PostStatus` -> stringRes).
+ - **Efor:** S
+
+ 8) **Stale TODO (RepositoryModule)**
+ - **Durum:** Mevcut.
+ - **Etki:** Yanıltıcı dokümantasyon; bakım maliyeti.
+ - **Öneri:** Eski TODO’yu kaldır.
+ - **Efor:** S
+
+ 9) **Logging standardı yok**
+ - **Durum:** Mevcut (`Log.*`).
+ - **Etki:** Üretimde gürültü; takip edilebilirlik düşük.
+ - **Öneri:** Timber veya küçük bir `Logger` wrapper + buildType bazlı davranış.
+ - **Efor:** S→M
+
+ ### 4.5 Test / Güven (Yüksek)
+
+ 10) **Test coverage pratikte yok**
+ - **Durum:** Mevcut.
+ - **Etki:** Refactor maliyeti artar; regresyon riski.
+ - **Öneri (minimum viable test):**
+   - `ValidationUtils` unit test
+   - ViewModel’ler için coroutine test + fake repo
+   - Repository için en azından “mapping / input validation” testleri
+ - **Efor:** L (kademeli başlatılabilir)
+
+ ---
+
+ ## 5) Ek Mimari Öneriler (İdeal Hedef)
+
+ Eğer hedef “sektör standardı, temiz mimari” ise, aşağıdaki adımlar projeyi net biçimde iyileştirir:
+
+ - **Domain katmanı ekle:** UseCase’ler (örn. `CreatePostUseCase`, `ToggleUpvoteUseCase`).
+ - **UI State standardı:** Her ekranda `UiState` (Loading/Content/Error/Empty) + tek tip error model.
+ - **Repository sınırları:** Repository yalnızca data erişimi + mapping; UI kararları (string format, label) repository’ye sızmasın.
+ - **Constants/Canonical değerler:** Firestore’da saklanan kategori değerleri `Constants.CATEGORY_*` gibi canonical code olsun; UI label `strings.xml` ile çözülsün.
+
+ ---
+
+ ## 6) Önceliklendirilmiş Roadmap
+
+ ### 0–2 hafta (En yüksek ROI)
+ - Image compression + max size kontrolü
+ - Storage cleanup (imageStoragePath + delete)
+ - RepositoryModule içindeki stale TODO kaldırma
+ - Hardcoded status string’lerini `strings.xml`’e taşıma
+ - Logging wrapper (min seviyede)
+
+ ### 2–6 hafta (Production hazırlığı)
+ - Pagination + load-more/infinite scroll
+ - Hata modeli + error UI standardı (Snackbar + retry)
+ - R8/ProGuard: variant bazlı etkinleştirme + rules
+ - Connectivity/offline state (en azından kullanıcıya net durum)
+
+ ### 6+ hafta (Kurumsal kalite)
+ - Test altyapısı (unit + viewmodel)
+ - Static analysis (ktlint/detekt) + CI
+ - Crashlytics/Performance Monitoring
+
+ ---
+
+ ## 7) Sonuç
+
+ Proje **temel mimari açısından sağlıklı** ve geliştirmeye uygun. Şu anki en kritik eksikler, büyük ölçüde “production sertleştirme” başlığında toplanıyor: görsel optimizasyonu, storage hijyeni, ölçeklenebilir listeleme, release yapılandırması, test ve observability.
+
+ Bu rapor “yol haritası” gibi kullanılabilir: önce maliyet/perf ve release readiness, sonra ölçek/test/ci.
