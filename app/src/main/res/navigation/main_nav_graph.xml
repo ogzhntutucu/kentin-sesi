@@ -79,6 +79,19 @@
         <action
             android:id="@+id/action_postDetailFragment_to_statusUpdatesFragment"
             app:destination="@id/statusUpdatesFragment" />
+        <action
+            android:id="@+id/action_postDetailFragment_to_commentsFragment"
+            app:destination="@id/commentsFragment" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/commentsFragment"
+        android:name="io.github.thwisse.kentinsesi.ui.post.CommentsFragment"
+        android:label="Yorumlar"
+        tools:layout="@layout/fragment_comments">
+        <argument
+            android:name="postId"
+            app:argType="string" />
     </fragment>
     
     <fragment

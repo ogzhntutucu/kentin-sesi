@@ -50,6 +50,10 @@ class PostDetailViewModel @Inject constructor(
     private val _addStatusUpdateState = MutableLiveData<Resource<Unit>>()
     val addStatusUpdateState: LiveData<Resource<Unit>> = _addStatusUpdateState
     
+    // Comment count için reactive LiveData
+    private val _commentCount = MutableLiveData<Int>(0)
+    val commentCount: LiveData<Int> = _commentCount
+    
     // Post bilgisi ve kullanıcı bilgisi
     private val _currentPost = MutableLiveData<Post?>()
     val currentPost: LiveData<Post?> = _currentPost
@@ -147,6 +151,7 @@ class PostDetailViewModel @Inject constructor(
                 is Resource.Success -> {
                     result.data?.let { post ->
                         _currentPost.value = post
+                        _commentCount.value = post.commentCount.toInt()
                         loadCurrentUser()
                         loadPostAuthor(post.authorId)
                         _postLoadState.value = Resource.Success(post)
@@ -162,11 +167,35 @@ class PostDetailViewModel @Inject constructor(
             }
         }
     }
+    
+    /**
+     * Post'u yeniden yükle ve UI'ı zorla güncelle (Comments/StatusUpdates'den dönüşte)
+     * LiveData'nın aynı değeri tekrar emit etmesini sağlamak için önce null yapıyoruz
+     */
+    fun refreshPostForUI(postId: String) {
+        viewModelScope.launch {
+            val result = postRepository.getPostById(postId)
+            if (result is Resource.Success) {
+                result.data?.let { post ->
+                    // LiveData'yı zorla tetikle - önce farklı değer sonra yeni değer
+                    _currentPost.value = null
+                    _currentPost.value = post
+                }
+            }
+        }
+    }
 
     fun getComments(postId: String) {
         viewModelScope.launch {
             _commentsState.value = Resource.Loading()
-            _commentsState.value = postRepository.getThreadedComments(postId)
+            val result = postRepository.getThreadedComments(postId)
+            _commentsState.value = result
+            
+            // Update comment count from result
+            if (result is Resource.Success) {
+                val activeComments = result.data?.count { !it.isDeleted } ?: 0
+                _commentCount.value = activeComments
+            }
         }
     }
 

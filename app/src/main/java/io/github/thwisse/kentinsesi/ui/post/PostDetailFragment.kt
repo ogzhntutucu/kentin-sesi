@@ -35,65 +35,29 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     private var _binding: FragmentPostDetailBinding? = null
     private val binding get() = _binding!!
 
+    
     // ViewModel Tanımı
     private val viewModel: PostDetailViewModel by viewModels()
-    private val commentAdapter = CommentAdapter(
-        onCommentClick = { comment ->
-            enterReplyMode(comment)
-        },
-        onRepliesToggleClick = { rootComment ->
-            toggleReplies(rootComment)
-        },
-        onCommentLongClick = { comment ->
-            if (comment.isDeleted) return@CommentAdapter
-            // Basit yetki kontrolü: Sadece kendi yorumunu veya yetkili ise silebilir
-            // Detaylı kontrolü ViewModel/Repository yapacak
-            showDeleteCommentDialog(comment)
-        }
-    )
 
     private var postLocation: LatLng? = null
     private var currentPostId: String? = null
     private var currentPost: Post? = null
 
-    private var replyingTo: Comment? = null
-
     private var lastRequestedStatus: PostStatus? = null
     private var statusUpdateConsumed = false
 
-    private var isCommentsSectionExpanded: Boolean = false
-
-    private var allThreadedComments: List<Comment> = emptyList()
-    private val expandedCommentIds = mutableSetOf<String>()
-
     private var isRefreshingPost: Boolean = false
-    private var isRefreshingComments: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPostDetailBinding.bind(view)
-
-        val baseInputPaddingBottom = binding.inputLayout.paddingBottom
-        ViewCompat.setOnApplyWindowInsetsListener(binding.inputLayout) { v, insets ->
-            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-            val sysBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            val bottom = maxOf(imeBottom, sysBottom)
-            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, baseInputPaddingBottom + bottom)
-            insets
-        }
-
-        binding.btnCancelReply.setOnClickListener {
-            exitReplyMode()
-        }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             val postId = currentPostId
             if (postId != null) {
                 binding.swipeRefreshLayout.isRefreshing = true
                 isRefreshingPost = true
-                isRefreshingComments = true
                 viewModel.loadPostById(postId)
-                viewModel.getComments(postId)
             } else {
                 binding.swipeRefreshLayout.isRefreshing = false
             }
@@ -155,87 +119,25 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                 }.ifBlank { " " }
             }
         }
-
-        viewModel.addReplyState.observe(viewLifecycleOwner) { resource ->
-            when (resource) {
-                is Resource.Error -> {
-                    binding.etComment.error = resource.message
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                }
-                is Resource.Success -> {
-                    exitReplyMode()
-                    hideKeyboardAndClearInputFocus()
-                }
-                is Resource.Loading -> { }
-            }
-        }
-        
-        viewModel.deleteCommentState.observe(viewLifecycleOwner) { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Yorum silindi", Toast.LENGTH_SHORT).show()
-                }
-                is Resource.Error -> {
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                }
-                is Resource.Loading -> { }
-            }
-        }
     }
 
-    private fun showDeleteCommentDialog(comment: Comment) {
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle(R.string.dialog_delete_comment_title)
-            .setMessage(R.string.dialog_delete_comment_message)
-            .setPositiveButton("Sil") { _, _ ->
-                viewModel.deleteComment(comment.id)
-            }
-            .setNegativeButton("İptal", null)
-            .show()
-    }
-
-    private fun enterReplyMode(comment: Comment) {
-        replyingTo = comment
-        binding.replyBanner.isVisible = true
-        val name = comment.authorFullName
-            .ifBlank { comment.authorFullName }
-            .ifBlank { "-" }
-        binding.tvReplyBannerText.text = getString(R.string.reply_to_person, name)
-        binding.etComment.hint = getString(R.string.reply_write_hint)
-        binding.etComment.requestFocus()
-    }
-
-    private fun exitReplyMode() {
-        replyingTo = null
-        binding.replyBanner.isVisible = false
-        binding.tvReplyBannerText.text = ""
-        binding.etComment.hint = getString(R.string.comment_write_hint)
-    }
-
-    private fun hideKeyboardAndClearInputFocus() {
-        binding.etComment.clearFocus()
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.etComment.windowToken, 0)
-    }
-
+    // Comment functions moved to CommentsFragment
+    // Comment functions moved to CommentsFragment
+    
     private fun observePostLoadState() {
         viewModel.postLoadState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
                     if (isRefreshingPost) {
                         isRefreshingPost = false
-                        if (!isRefreshingComments) {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                        }
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
                 is Resource.Error -> {
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     if (isRefreshingPost) {
                         isRefreshingPost = false
-                        if (!isRefreshingComments) {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                        }
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
                 is Resource.Loading -> {
@@ -296,16 +198,24 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
                     // Yorumları da yükle
                     viewModel.getComments(it.id)
                 } else {
-                    // Post zaten yüklü, sadece güncelle (status değişikliği gibi)
+                    // Post zaten yüklü, sadece güncelle (status/commentCount değişikliği gibi)
                     currentPost = it
                     setupViews(it)
                 }
 
                 if (isRefreshingPost) {
                     isRefreshingPost = false
-                    if (!isRefreshingComments) {
-                        binding.swipeRefreshLayout.isRefreshing = false
-                    }
+                    binding.swipeRefreshLayout.isRefreshing = false
+                }
+            }
+        }
+        
+        // Post yükleme durumu için alternatif observer - her zaman UI'ı güncelle
+        viewModel.postLoadState.observe(viewLifecycleOwner) { resource ->
+            if (resource is Resource.Success) {
+                resource.data?.let { post ->
+                    currentPost = post
+                    setupViews(post)
                 }
             }
         }
@@ -472,6 +382,9 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
             tvDetailUpvoteCount.text = "${post.upvoteCount} Destek"
             ivDetailImage.load(post.imageUrl) { crossfade(true) }
+            
+            // Yorum sayısını güncelle (CommentsFragment'tan döndükten sonra)
+            tvCommentsHeader.text = getString(R.string.comments_header, post.commentCount)
         }
 
         binding.btnDetailUpvote.setOnClickListener {
@@ -515,183 +428,23 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     }
 
     private fun setupComments() {
-        binding.rvComments.apply {
-            adapter = commentAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-
-        // Başlangıçta yorumlar kapalıysa input alanı da kapalı olsun
-        binding.inputLayout.isVisible = isCommentsSectionExpanded
-        if (!isCommentsSectionExpanded) {
-            binding.replyBanner.isVisible = false
-        }
-
-        binding.cardCommentsHeader.setOnClickListener {
-            isCommentsSectionExpanded = !isCommentsSectionExpanded
-            binding.rvComments.isVisible = isCommentsSectionExpanded
-            binding.spaceCommentsBottom.isVisible = isCommentsSectionExpanded
-
-            binding.inputLayout.isVisible = isCommentsSectionExpanded
-            if (!isCommentsSectionExpanded) {
-                exitReplyMode()
-                binding.replyBanner.isVisible = false
-            }
-        }
-
-        binding.btnSendComment.setOnClickListener {
-            val text = binding.etComment.text.toString().trim()
-            
-            // ValidationUtils kullanarak yorum kontrolü
-            val commentError = ValidationUtils.getValidationError("comment", text)
-            
-            when {
-                text.isEmpty() -> {
-                    binding.etComment.error = "Yorum boş olamaz"
-                    binding.etComment.requestFocus()
-                    return@setOnClickListener
-                }
-                commentError != null -> {
-                    binding.etComment.error = commentError
-                    binding.etComment.requestFocus()
-                    return@setOnClickListener
-                }
-                currentPostId == null -> {
-                    Toast.makeText(requireContext(), "Post ID bulunamadı", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-            }
-
-            val postId = currentPostId!!
-            val replying = replyingTo
-            if (replying != null) {
-                viewModel.addReply(
-                    postId = postId,
-                    text = text,
-                    parentCommentId = replying.id,
-                    replyToAuthorId = replying.authorId,
-                    replyToAuthorFullName = replying.authorFullName
-                )
-            } else {
-                viewModel.addComment(postId, text)
-            }
-
-            binding.etComment.text.clear()
-            binding.etComment.error = null
-        }
-
-        viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    val all = resource.data ?: emptyList()
-                    allThreadedComments = all
-
-                    // Sadece silinmemiş yorumları say
-                    val activeCommentCount = all.count { !it.isDeleted }
-                    binding.tvCommentsHeader.text = "Yorumlar ($activeCommentCount)"
-
-                    val childCounts = buildChildCountByParentId(all)
-                    commentAdapter.setChildCountByParentId(childCounts)
-                    commentAdapter.setExpandedCommentIds(expandedCommentIds)
-
-                    val visible = buildVisibleComments(all, expandedCommentIds)
-                    // Force refresh - yeni liste göndermeden önce null gönder
-                    commentAdapter.submitList(null)
-                    commentAdapter.submitList(visible.toList())
-                    if (isRefreshingComments) {
-                        isRefreshingComments = false
-                        if (!isRefreshingPost) {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                        }
-                    }
-                }
-                is Resource.Error -> {
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                    if (isRefreshingComments) {
-                        isRefreshingComments = false
-                        if (!isRefreshingPost) {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                        }
-                    }
-                }
-                is Resource.Loading -> { }
-            }
+        // Comment count observer - güncellemelerdeki gibi reactive
+        viewModel.commentCount.observe(viewLifecycleOwner) { count ->
+            binding.tvCommentsHeader.text = getString(R.string.comments_header, count)
         }
         
-        viewModel.addCommentState.observe(viewLifecycleOwner) { resource ->
-            when (resource) {
-                is Resource.Error -> {
-                    binding.etComment.error = resource.message
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+        // Comments card click - navigate to CommentsFragment
+        binding.cardCommentsHeader.setOnClickListener {
+            currentPostId?.let { postId ->
+                val bundle = Bundle().apply {
+                    putString("postId", postId)
                 }
-                is Resource.Success -> {
-                    // Yorum başarıyla eklendi, yorumlar otomatik yenilenecek
-                    hideKeyboardAndClearInputFocus()
-                }
-                is Resource.Loading -> { }
+                findNavController().navigate(
+                    R.id.action_postDetailFragment_to_commentsFragment,
+                    bundle
+            )
             }
         }
-    }
-
-    private fun toggleReplies(rootComment: Comment) {
-        val id = rootComment.id
-        if (id.isBlank()) return
-
-        if (expandedCommentIds.contains(id)) {
-            expandedCommentIds.remove(id)
-        } else {
-            expandedCommentIds.add(id)
-        }
-
-        commentAdapter.setExpandedCommentIds(expandedCommentIds)
-        val visible = buildVisibleComments(allThreadedComments, expandedCommentIds)
-        commentAdapter.submitList(visible)
-    }
-
-    private fun buildChildCountByParentId(all: List<Comment>): Map<String, Int> {
-        val counts = mutableMapOf<String, Int>()
-        for (c in all) {
-            val parentId = c.parentCommentId
-            if (!parentId.isNullOrBlank()) {
-                counts[parentId] = (counts[parentId] ?: 0) + 1
-            }
-        }
-        return counts
-    }
-
-    private fun buildVisibleComments(all: List<Comment>, expandedIds: Set<String>): List<Comment> {
-        if (all.isEmpty()) return emptyList()
-
-        val indexById = all.mapIndexedNotNull { index, c ->
-            if (c.id.isBlank()) null else c.id to index
-        }.toMap()
-
-        val childrenByParent = all
-            .filter { !it.parentCommentId.isNullOrBlank() }
-            .groupBy { it.parentCommentId!! }
-            .mapValues { (_, children) ->
-                children.sortedBy { child -> indexById[child.id] ?: Int.MAX_VALUE }
-            }
-
-        val topLevel = all
-            .filter { it.parentCommentId.isNullOrBlank() || it.depth == 0 }
-            .sortedBy { c -> indexById[c.id] ?: Int.MAX_VALUE }
-
-        val result = mutableListOf<Comment>()
-        fun appendChildren(parent: Comment) {
-            if (!expandedIds.contains(parent.id)) return
-            val children = childrenByParent[parent.id].orEmpty()
-            for (child in children) {
-                result.add(child)
-                appendChildren(child)
-            }
-        }
-
-        for (root in topLevel) {
-            result.add(root)
-            appendChildren(root)
-        }
-
-        return result
     }
     
     /**
@@ -731,6 +484,11 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         (activity as? io.github.thwisse.kentinsesi.ui.MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
             io.github.thwisse.kentinsesi.R.id.bottom_nav_view
         )?.visibility = android.view.View.GONE
+        
+        // CommentsFragment veya StatusUpdatesFragment'tan döndükten sonra post'u yenile
+        currentPostId?.let { postId ->
+            viewModel.refreshPostForUI(postId)
+        }
     }
     
     override fun onPause() {
