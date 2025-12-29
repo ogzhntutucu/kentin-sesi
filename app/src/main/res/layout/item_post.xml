@@ -107,6 +107,17 @@
                     tools:text="15 Yorum" />
 
                 <TextView
+                    android:id="@+id/tvUpdateCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/tvCommentCount"
+                    android:layout_marginStart="12dp"
+                    android:layout_centerVertical="true"
+                    android:textColor="#666666"
+                    android:textStyle="bold"
+                    tools:text="3 Güncelleme" />
+
+                <TextView
                     android:id="@+id/tvDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

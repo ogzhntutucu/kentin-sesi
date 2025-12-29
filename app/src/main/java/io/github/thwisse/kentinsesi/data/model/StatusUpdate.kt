@@ -24,6 +24,9 @@ data class StatusUpdate(
     val authorId: String = "",
     val authorFullName: String = "",
     val authorUsername: String = "",
+    val authorCity: String = "",
+    val authorDistrict: String = "",
+    val authorTitle: String = "",
     
     @ServerTimestamp
     val createdAt: Date? = null

@@ -59,6 +59,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
     private var replyingTo: Comment? = null
 
     private var lastRequestedStatus: PostStatus? = null
+    private var statusUpdateConsumed = false
 
     private var isCommentsSectionExpanded: Boolean = false
 
@@ -387,14 +388,21 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         viewModel.addStatusUpdateState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), R.string.status_update_success, Toast.LENGTH_SHORT).show()
-                    // Post detail'i yenile (status değişti)
-                    currentPostId?.let { viewModel.loadPostById(it) }
+                    // Sadece bir kez toast göster
+                    if (!statusUpdateConsumed) {
+                        Toast.makeText(requireContext(), R.string.status_update_success, Toast.LENGTH_SHORT).show()
+                        statusUpdateConsumed = true
+                        // Post detail'i yenile (status değişti)
+                        currentPostId?.let { viewModel.loadPostById(it) }
+                    }
                 }
                 is Resource.Error -> {
                     Toast.makeText(requireContext(), resource.message ?: getString(R.string.status_update_error), Toast.LENGTH_SHORT).show()
                 }
-                is Resource.Loading -> { }
+                is Resource.Loading -> { 
+                    // Loading başladığında flag'i reset et
+                    statusUpdateConsumed = false
+                }
             }
         }
     }
@@ -579,7 +587,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
 
                     // Sadece silinmemiş yorumları say
                     val activeCommentCount = all.count { !it.isDeleted }
-                    binding.tvCommentsHeader.text = "Yorumlar ($activeCommentCount yorum)"
+                    binding.tvCommentsHeader.text = "Yorumlar ($activeCommentCount)"
 
                     val childCounts = buildChildCountByParentId(all)
                     commentAdapter.setChildCountByParentId(childCounts)
@@ -715,6 +723,22 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             googleMap.addMarker(MarkerOptions().position(location).title("Sorun Konumu"))
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
         }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Bottom navigation'ı gizle
+        (activity as? io.github.thwisse.kentinsesi.ui.MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            io.github.thwisse.kentinsesi.R.id.bottom_nav_view
+        )?.visibility = android.view.View.GONE
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        // Bottom navigation'ı geri göster
+        (activity as? io.github.thwisse.kentinsesi.ui.MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            io.github.thwisse.kentinsesi.R.id.bottom_nav_view
+        )?.visibility = android.view.View.VISIBLE
     }
 
     override fun onDestroyView() {

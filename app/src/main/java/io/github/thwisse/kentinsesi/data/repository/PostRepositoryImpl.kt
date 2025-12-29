@@ -57,7 +57,8 @@ class PostRepositoryImpl @Inject constructor(
                 // Post oluşturulduğunda yazarın kendi oyu otomatik +1 olarak ekleniyor
                 upvoteCount = 1,
                 upvotedBy = listOf(currentUser.uid), // Yazarın kendisi otomatik upvote ediyor
-                commentCount = 0
+                commentCount = 0,
+                updateCount = 1 // İlk status update için
             )
 
             // Post oluştur
@@ -79,6 +80,9 @@ class PostRepositoryImpl @Inject constructor(
                 "authorId" to currentUser.uid,
                 "authorFullName" to (profile?.fullName ?: ""),
                 "authorUsername" to (profile?.username ?: ""),
+                "authorCity" to (profile?.city ?: ""),
+                "authorDistrict" to (profile?.district ?: ""),
+                "authorTitle" to (profile?.title ?: ""),
                 "createdAt" to FieldValue.serverTimestamp()
             )
             
@@ -662,6 +666,9 @@ class PostRepositoryImpl @Inject constructor(
                     authorId = data["authorId"] as? String ?: "",
                     authorFullName = data["authorFullName"] as? String ?: "",
                     authorUsername = data["authorUsername"] as? String ?: "",
+                    authorCity = data["authorCity"] as? String ?: "",
+                    authorDistrict = data["authorDistrict"] as? String ?: "",
+                    authorTitle = data["authorTitle"] as? String ?: "",
                     createdAt = (data["createdAt"] as? com.google.firebase.Timestamp)?.toDate()
                 )
             }
@@ -701,10 +708,13 @@ class PostRepositoryImpl @Inject constructor(
                 "authorId" to user.uid,
                 "authorFullName" to (profile?.fullName ?: ""),
                 "authorUsername" to (profile?.username ?: ""),
+                "authorCity" to (profile?.city ?: ""),
+                "authorDistrict" to (profile?.district ?: ""),
+                "authorTitle" to (profile?.title ?: ""),
                 "createdAt" to FieldValue.serverTimestamp()
             )
             
-            // Transaction: StatusUpdate ekle + Post status güncelle
+            // Transaction: StatusUpdate ekle + Post status ve updateCount güncelle
             firestore.runTransaction { transaction ->
                 val postRef = firestore.collection(Constants.COLLECTION_POSTS).document(postId)
                 val updateRef = postRef.collection("statusUpdates").document()
@@ -712,8 +722,9 @@ class PostRepositoryImpl @Inject constructor(
                 // StatusUpdate ekle
                 transaction.set(updateRef, updateData)
                 
-                // Post'un status alanını güncelle
+                // Post'un status ve updateCount alanlarını güncelle
                 transaction.update(postRef, "status", statusValue)
+                transaction.update(postRef, "updateCount", FieldValue.increment(1))
             }.await()
             
             Resource.Success(Unit)

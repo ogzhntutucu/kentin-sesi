@@ -22,6 +22,12 @@ class StatusUpdatesFragment : Fragment(R.layout.fragment_status_updates) {
     private val adapter = StatusUpdateAdapter()
 
     private var currentPostId: String? = null
+    private var currentPost: io.github.thwisse.kentinsesi.data.model.Post? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,6 +47,60 @@ class StatusUpdatesFragment : Fragment(R.layout.fragment_status_updates) {
 
         // İlk yükleme
         viewModel.loadStatusUpdates(currentPostId!!)
+        
+        // Post bilgisini de yükle (menu için gerekli)
+        viewModel.loadPostById(currentPostId!!)
+    }
+    
+    override fun onCreateOptionsMenu(menu: android.view.Menu, inflater: android.view.MenuInflater) {
+        inflater.inflate(io.github.thwisse.kentinsesi.R.menu.menu_status_updates, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+    
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            io.github.thwisse.kentinsesi.R.id.action_update_status -> {
+                // Post sahibi veya yetkili kontrolü
+                val user = viewModel.currentUser.value
+                val post = viewModel.currentPost.value
+                val canUpdate = (user?.role == "official" || user?.role == "admin") || 
+                               (post?.authorId == user?.uid)
+                
+                if (canUpdate) {
+                    showUpdateStatusDialog()
+                } else {
+                    Toast.makeText(requireContext(), "Durum güncellemek için yetkiniz yok", Toast.LENGTH_SHORT).show()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    private fun showUpdateStatusDialog() {
+        val currentPostStatus = viewModel.currentPost.value?.statusEnum ?: io.github.thwisse.kentinsesi.data.model.PostStatus.NEW
+        
+        val bottomSheet = UpdateStatusBottomSheet.newInstance(currentPostStatus)
+        bottomSheet.setOnStatusUpdateListener { status, note ->
+            viewModel.addStatusUpdate(status, note)
+        }
+        bottomSheet.show(childFragmentManager, "UpdateStatusBottomSheet")
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Bottom navigation'ı gizle
+        (activity as? io.github.thwisse.kentinsesi.ui.MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            io.github.thwisse.kentinsesi.R.id.bottom_nav_view
+        )?.visibility = View.GONE
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        // Bottom navigation'ı geri göster
+        (activity as? io.github.thwisse.kentinsesi.ui.MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            io.github.thwisse.kentinsesi.R.id.bottom_nav_view
+        )?.visibility = View.VISIBLE
     }
 
     private fun setupRecyclerView() {
@@ -68,6 +128,8 @@ class StatusUpdatesFragment : Fragment(R.layout.fragment_status_updates) {
                     } else {
                         binding.tvEmptyState.isVisible = false
                         binding.rvStatusUpdates.isVisible = true
+                        // Önce null gönder, sonra listeyi gönder - arrow visibility için gerekli
+                        adapter.submitList(null)
                         adapter.submitList(updates)
                     }
                 }

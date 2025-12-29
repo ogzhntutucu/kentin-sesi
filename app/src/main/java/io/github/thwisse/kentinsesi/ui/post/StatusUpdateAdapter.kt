@@ -23,14 +23,17 @@ class StatusUpdateAdapter : ListAdapter<StatusUpdate, StatusUpdateAdapter.ViewHo
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), position)
     }
 
     class ViewHolder(private val binding: ItemStatusUpdateBinding) : RecyclerView.ViewHolder(binding.root) {
         
         private val dateFormat = SimpleDateFormat("dd MMM, HH:mm", Locale("tr"))
 
-        fun bind(update: StatusUpdate) {
+        fun bind(update: StatusUpdate, position: Int) {
+            // Ok işareti - sadece ilk item'dan sonrakiler için göster
+            binding.tvTimelineArrow.visibility = if (position == 0) android.view.View.GONE else android.view.View.VISIBLE
+            
             // Durum badge'i
             val (badgeText, badgeColor) = when (update.status) {
                 "new" -> "YENİ" to Color.parseColor("#2196F3") // Mavi
@@ -50,11 +53,31 @@ class StatusUpdateAdapter : ListAdapter<StatusUpdate, StatusUpdateAdapter.ViewHo
                 "@${update.authorUsername}" 
             else 
                 ""
-                
-            binding.tvAuthor.text = if (usernameText.isNotBlank()) {
+            
+            val authorName = if (usernameText.isNotBlank()) {
                 "${update.authorFullName} ($usernameText)"
             } else {
                 update.authorFullName
+            }
+            
+            // Lokasyon ve title bilgisi (yorumlar gibi)
+            val location = listOf(update.authorCity, update.authorDistrict)
+                .filter { it.isNotBlank() }
+                .joinToString("/")
+            val title = update.authorTitle
+            
+            val metaInfo = buildString {
+                if (location.isNotBlank()) append(location)
+                if (title.isNotBlank()) {
+                    if (isNotEmpty()) append(" • ")
+                    append(title)
+                }
+            }
+            
+            binding.tvAuthor.text = if (metaInfo.isNotBlank()) {
+                "$authorName\n$metaInfo"
+            } else {
+                authorName
             }
             
             // Not

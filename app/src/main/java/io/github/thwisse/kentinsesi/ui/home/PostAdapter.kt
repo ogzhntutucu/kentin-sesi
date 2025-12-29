@@ -30,6 +30,7 @@ class PostAdapter(
                 tvCategory.text = post.category
                 tvUpvoteCount.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_support_count, post.upvoteCount)
                 tvCommentCount.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_comment_count, post.commentCount)
+                tvUpdateCount.text = "${post.updateCount} Güncelleme"
 
                 tvLocation.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_location_city_district, post.district ?: "-")
 

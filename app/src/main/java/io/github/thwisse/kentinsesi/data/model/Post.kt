@@ -37,6 +37,7 @@ data class Post(
     val upvotedBy: List<String> = emptyList(),
 
     val commentCount: Long = 0,
+    val updateCount: Long = 0, // Durum güncellemesi sayısı
 ) {
     
     /**

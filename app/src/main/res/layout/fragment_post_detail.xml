@@ -221,14 +221,7 @@
                             android:text="@string/status_updates"
                             android:textStyle="bold"
                             android:textColor="@color/black"
-                            android:textSize="14sp" />
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="?attr/colorPrimary"
-                            android:contentDescription="@string/post_detail_support" />
+                            android:textSize="16sp" />
 
                     </LinearLayout>
 

@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     function postAllowedKeys() {
-      return ['authorId', 'title', 'description', 'category', 'imageUrl', 'location', 'district', 'createdAt', 'status', 'upvoteCount', 'upvotedBy', 'commentCount'];
+      return ['authorId', 'title', 'description', 'category', 'imageUrl', 'location', 'district', 'createdAt', 'status', 'upvoteCount', 'upvotedBy', 'commentCount', 'updateCount'];
     }
 
     function hasOnlyPostAllowedKeys(data) {
@@ -108,9 +108,9 @@ service cloud.firestore {
         (isOwner(resource.data.authorId) && 
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description', 'category', 'imageUrl', 'status']) &&
          (!('status' in request.resource.data) || isValidPostStatus(request.resource.data.status))) ||
-        // Yetkili kullanıcılar sadece status'u güncelleyebilir
+        // Yetkili kullanıcılar sadece status ve updateCount'u güncelleyebilir
         (isOfficial() && 
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updateCount']) &&
          isValidPostStatus(request.resource.data.status)) ||
         // Herhangi bir giriş yapmış kullanıcı upvote yapabilir (upvotedBy ve upvoteCount)
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotedBy', 'upvoteCount'])) ||
@@ -180,7 +180,9 @@ service cloud.firestore {
                        // Alan kontrolü
                        request.resource.data.keys().hasOnly([
                          'postId', 'status', 'note', 'authorId',
-                         'authorFullName', 'authorUsername', 'createdAt'
+                         'authorFullName', 'authorUsername', 
+                         'authorCity', 'authorDistrict', 'authorTitle',
+                         'createdAt'
                        ]) &&
                        request.resource.data.note is string &&
                        request.resource.data.note.size() > 0 &&
