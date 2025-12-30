@@ -25,6 +25,9 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
     private lateinit var commentAdapter: CommentAdapter
     private var currentPostId: String? = null
     private var replyingTo: Comment? = null
+    
+    // Collapse durumu
+    private val expandedCommentIds = mutableSetOf<String>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -67,7 +70,7 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
                 enterReplyMode(comment)
             },
             onRepliesToggleClick = { rootComment ->
-                // Toggle replies (empty - not needed in dedicated fragment)
+                toggleCommentExpansion(rootComment)
             },
             onCommentLongClick = { comment ->
                 if (!comment.isDeleted) {
@@ -114,8 +117,8 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    val comments = resource.data ?: emptyList()
-                    commentAdapter.submitList(comments)
+                    val allComments = resource.data ?: emptyList()
+                    updateCommentList(allComments)
                     binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Resource.Error -> {
@@ -150,8 +153,39 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
             when (resource) {
                 is Resource.Success -> {
                     Toast.makeText(requireContext(), getString(R.string.reply_added), Toast.LENGTH_SHORT).show()
+                    
+                    android.util.Log.d("DEBUG_REPLY", "=== REPLY SUCCESS ===")
+                    android.util.Log.d("DEBUG_REPLY", "replyingTo: ${replyingTo?.id}, depth: ${replyingTo?.depth}")
+                    
+                    // Yanıt verilen yorumun tüm parent zincirini otomatik expand et
+                    replyingTo?.let { targetComment ->
+                        // Yorumları al (henüz yüklenemiş olabilir, o zaman bekle)
+                        val allComments = (viewModel.commentsState.value as? Resource.Success)?.data ?: emptyList()
+                        android.util.Log.d("DEBUG_REPLY", "Current comments count: ${allComments.size}")
+                        android.util.Log.d("DEBUG_REPLY", "expandedCommentIds BEFORE: ${expandedCommentIds.joinToString(", ")}")
+                        
+                        val commentById = allComments.associateBy { it.id }
+                        
+                        // Target yorumdan başlayarak root'a kadar tüm parent'ları expand et
+                        fun expandParentChain(comment: Comment) {
+                            android.util.Log.d("DEBUG_REPLY", "Expanding: ${comment.id}, depth: ${comment.depth}")
+                            expandedCommentIds.add(comment.id)
+                            val parentId = comment.parentCommentId
+                            if (!parentId.isNullOrBlank()) {
+                                commentById[parentId]?.let { parentComment ->
+                                    expandParentChain(parentComment)
+                                } ?: android.util.Log.e("DEBUG_REPLY", "Parent not found: $parentId")
+                            }
+                        }
+                        
+                        expandParentChain(targetComment)
+                        android.util.Log.d("DEBUG_REPLY", "expandedCommentIds AFTER: ${expandedCommentIds.joinToString(", ")}")
+                        android.util.Log.d("DEBUG_REPLY", "Total expanded: ${expandedCommentIds.size}")
+                    }
+                    
                     cancelReplyMode()
                     hideKeyboard()
+                    android.util.Log.d("DEBUG_REPLY", "Calling getComments...")
                     currentPostId?.let { viewModel.getComments(it) }
                 }
                 is Resource.Error -> {
@@ -221,6 +255,78 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.hideSoftInputFromWindow(binding.etComment.windowToken, 0)
         binding.etComment.clearFocus()
+    }
+    
+    private fun toggleCommentExpansion(comment: Comment) {
+        if (expandedCommentIds.contains(comment.id)) {
+            expandedCommentIds.remove(comment.id)
+        } else {
+            expandedCommentIds.add(comment.id)
+        }
+        // Refresh görünümünü güncellemek için mevcut listeyi yeniden güncelle
+        val currentList = (viewModel.commentsState.value as? Resource.Success)?.data ?: emptyList()
+        updateCommentList(currentList)
+    }
+    
+    private fun updateCommentList(allComments: List<Comment>) {
+        android.util.Log.d("DEBUG_UPDATE", "=== UPDATE COMMENT LIST ===")
+        android.util.Log.d("DEBUG_UPDATE", "Total comments: ${allComments.size}")
+        android.util.Log.d("DEBUG_UPDATE", "expandedCommentIds: ${expandedCommentIds.joinToString(", ")}")
+        
+        // Hangi yorumların kaç çocuğu var hesapla
+        val childCountMap = mutableMapOf<String, Int>()
+        allComments.forEach { comment ->
+            val parentId = comment.parentCommentId
+            if (!parentId.isNullOrBlank()) {
+                childCountMap[parentId] = (childCountMap[parentId] ?: 0) + 1
+            }
+        }
+        
+        android.util.Log.d("DEBUG_UPDATE", "Child counts: ${childCountMap.entries.joinToString { "${it.key}=${it.value}" }}")
+        
+        // Parent ID'ye göre yorumları grupla (recursive kontrol için)
+        val commentById = allComments.associateBy { it.id }
+        
+        // Bir yorumun tüm parent zincirinin expand edilmiş olup olmadığını kontrol et
+        fun isCommentVisible(comment: Comment): Boolean {
+            // Ana yorumlar her zaman görünür
+            if (comment.parentCommentId.isNullOrBlank()) {
+                return true
+            }
+            
+            // Parent'ı bul
+            val parent = commentById[comment.parentCommentId]
+            if (parent == null) {
+                // Parent bulunamazsa gizle (güvenlik)
+                android.util.Log.e("DEBUG_UPDATE", "Parent not found for comment ${comment.id}, parentId: ${comment.parentCommentId}")
+                return false
+            }
+            
+            // Parent expand edilmemişse bu yorum görünmez
+            if (!expandedCommentIds.contains(parent.id)) {
+                android.util.Log.d("DEBUG_UPDATE", "Comment ${comment.id} hidden because parent ${parent.id} not expanded")
+                return false
+            }
+            
+            // Parent'ın da görünür olup olmadığını kontrol et (recursive)
+            return isCommentVisible(parent)
+        }
+        
+        // Collapse durumuna göre listeyi filtrele
+        val visibleComments = allComments.filter { comment ->
+            val visible = isCommentVisible(comment)
+            if (!visible) {
+                android.util.Log.d("DEBUG_UPDATE", "Hiding comment: ${comment.id}, depth: ${comment.depth}, parent: ${comment.parentCommentId}")
+            }
+            visible
+        }
+        
+        android.util.Log.d("DEBUG_UPDATE", "Visible comments: ${visibleComments.size}")
+        
+        // Adapter'a güncellenmiş verileri gönder
+        commentAdapter.setChildCountByParentId(childCountMap)
+        commentAdapter.setExpandedCommentIds(expandedCommentIds)
+        commentAdapter.submitList(visibleComments)
     }
 
     override fun onResume() {

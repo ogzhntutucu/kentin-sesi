@@ -135,7 +135,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_s"
-                android:backgroundTint="@color/colorTextSecondary"
+                android:backgroundTint="@color/bottom_nav_item_tint"
                 android:text="@string/create_post_select_location"
                 app:icon="@android:drawable/ic_dialog_map"
                 app:layout_constraintEnd_toEndOf="parent"

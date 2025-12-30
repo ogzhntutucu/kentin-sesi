@@ -332,10 +332,13 @@ class PostRepositoryImpl @Inject constructor(
 
             val flattened = mutableListOf<Comment>()
             fun appendChildren(parent: Comment) {
-                val nextDepth = parent.depth + 1
-                if (nextDepth > maxDepth) return
+                // Depth kontrolünü kaldırdık çünkü addReply fonksiyonunda 
+                // depth zaten coerceAtMost(MAX_COMMENT_DEPTH) ile sınırlanıyor
+                // Bu sayede depth=4 olan yorumların child'ları da gelecek (onlar da depth=4)
                 val children = childrenByParent[parent.id].orEmpty()
+                android.util.Log.d("GetThreadedComments", "Parent ${parent.id} (depth=${parent.depth}) has ${children.size} children")
                 for (child in children) {
+                    android.util.Log.d("GetThreadedComments", "Adding child ${child.id} (depth=${child.depth})")
                     flattened.add(child)
                     appendChildren(child)
                 }
@@ -438,9 +441,7 @@ class PostRepositoryImpl @Inject constructor(
             val parent = parentDoc.toObject(Comment::class.java)?.copy(id = parentDoc.id)
                 ?: return Resource.Error("Yanıtlanacak yorum okunamadı")
 
-            if (parent.depth >= Constants.MAX_COMMENT_DEPTH) {
-                return Resource.Error("Maksimum yanıt derinliğine ulaşıldı")
-            }
+
 
             val rootId = if (parent.depth == 0) {
                 parent.id
@@ -452,6 +453,10 @@ class PostRepositoryImpl @Inject constructor(
                 ?: parent.authorFullName.takeIf { it.isNotBlank() }
 
             val replyToUsernameResolved = parent.authorUsername.takeIf { it.isNotBlank() }
+            
+            // 5. katmana (depth=4) kadar yanıt verilebilir
+            // Ama 5. katmandaki yoruma yanıt verilirse, yeni yorum da depth=4'te kalır (6. katman oluşmaz)
+            val replyDepth = (parent.depth + 1).coerceAtMost(Constants.MAX_COMMENT_DEPTH)
 
             // Firestore'a yazılacak alanları explicit olarak belirt
             val replyData = hashMapOf<String, Any?>(
@@ -464,7 +469,7 @@ class PostRepositoryImpl @Inject constructor(
                 "text" to text,
                 "parentCommentId" to parent.id,
                 "rootCommentId" to rootId,
-                "depth" to (parent.depth + 1),
+                "depth" to replyDepth,
                 "replyCount" to 0,
                 "replyToAuthorId" to replyToAuthorId,
                 "replyToAuthorFullName" to replyToFullNameResolved,
@@ -473,15 +478,21 @@ class PostRepositoryImpl @Inject constructor(
             )
 
             val rootRef = commentsCol.document(rootId)
+            val parentRef = commentsCol.document(parent.id)
+            
+            // Debug log
+            android.util.Log.d("AddReply", "Parent ID: ${parent.id}, Parent depth: ${parent.depth}, Root ID: $rootId, Reply depth: $replyDepth")
 
             firestore.runTransaction { tx ->
                 // reply write
                 tx.set(commentsCol.document(), replyData)
-                // denormalized reply count on root comment
-                tx.update(rootRef, "replyCount", FieldValue.increment(1))
+                // Parent yorumun reply count'unu artır (root değil!)
+                tx.update(parentRef, "replyCount", FieldValue.increment(1))
                 // denormalized total comment count on post
                 tx.update(postRef, "commentCount", FieldValue.increment(1))
             }.await()
+            
+            android.util.Log.d("AddReply", "Reply added successfully")
 
             Resource.Success(Unit)
         } catch (e: Exception) {

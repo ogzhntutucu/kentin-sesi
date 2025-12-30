@@ -148,6 +148,7 @@ class CommentAdapter(
 
             // Alt yorum sayısı toggle
             val count = childCountByParentId[comment.id] ?: 0
+            // Yanıt sayısı 0 ise gösterme, 0'dan büyükse göster
             binding.tvRepliesToggle.visibility = if (count > 0) View.VISIBLE else View.INVISIBLE
             binding.tvRepliesToggle.text = context.getString(io.github.thwisse.kentinsesi.R.string.replies_count, count)
             binding.tvRepliesToggle.setOnClickListener {
@@ -156,18 +157,18 @@ class CommentAdapter(
 
             // Yanıtla butonu mantığı (silinmemişse)
             if (!comment.isDeleted) {
-                val canReply = comment.depth < Constants.MAX_COMMENT_DEPTH
-                binding.tvReplyAction.isEnabled = canReply
-                binding.tvReplyAction.alpha = if (canReply) 1f else 0.5f
+                // 5. katmana (depth=4) kadar yanıt verebiliriz, buton her zaman aktif
+                binding.tvReplyAction.isEnabled = true
+                binding.tvReplyAction.alpha = 1f
                 binding.tvReplyAction.setOnClickListener {
-                    if (canReply) onCommentClick?.invoke(comment)
+                    onCommentClick?.invoke(comment)
                 }
             } else {
                 // Silinmişse zaten visible GONE yapıldı, ama yine de listener/enable temizle
                 binding.tvReplyAction.setOnClickListener(null)
             }
 
-            // Kart click: aç/kapat (her durumda çalışsın)
+            // Kart click: aç/kapat (yanıtı varsa)
             binding.root.setOnClickListener {
                 if (count > 0) onRepliesToggleClick?.invoke(comment)
             }
