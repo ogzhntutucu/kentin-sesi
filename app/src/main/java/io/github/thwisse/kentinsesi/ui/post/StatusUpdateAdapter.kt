@@ -28,7 +28,7 @@ class StatusUpdateAdapter : ListAdapter<StatusUpdate, StatusUpdateAdapter.ViewHo
 
     class ViewHolder(private val binding: ItemStatusUpdateBinding) : RecyclerView.ViewHolder(binding.root) {
         
-        private val dateFormat = SimpleDateFormat("dd MMM, HH:mm", Locale("tr"))
+        private val dateFormat = SimpleDateFormat("EEEE, dd MMM, HH:mm", Locale.getDefault())
 
         fun bind(update: StatusUpdate, position: Int) {
             // Ok işareti - sadece ilk item'dan sonrakiler için göster

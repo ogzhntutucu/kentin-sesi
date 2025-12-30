@@ -128,6 +128,16 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    
+    /**
+     * Post'un var olup olmadığını kontrol et (silinen post yorumlarına tıklandığında)
+     */
+    fun checkPostExists(postId: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = postRepository.getPostById(postId)
+            callback(result is Resource.Success && result.data != null)
+        }
+    }
 
     fun signOut() {
         authRepository.signOut()

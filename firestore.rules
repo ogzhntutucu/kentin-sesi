@@ -106,7 +106,7 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
         // Post sahibi belirli alanları güncelleyebilir (status dahil - kendi postunu çözüldü olarak işaretleyebilir)
         (isOwner(resource.data.authorId) && 
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description', 'category', 'imageUrl', 'status']) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description', 'category', 'imageUrl', 'status', 'updateCount']) &&
          (!('status' in request.resource.data) || isValidPostStatus(request.resource.data.status))) ||
         // Yetkili kullanıcılar sadece status ve updateCount'u güncelleyebilir
         (isOfficial() && 

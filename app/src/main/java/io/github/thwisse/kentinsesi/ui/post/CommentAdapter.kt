@@ -115,7 +115,7 @@ class CommentAdapter(
             // Tarih
             val date = comment.createdAt
             if (date != null) {
-                val format = SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault())
+                val format = SimpleDateFormat("EEEE, dd MMM, HH:mm", Locale.getDefault())
                 binding.tvCommentDate.text = format.format(date)
             } else {
                 binding.tvCommentDate.text = context.getString(io.github.thwisse.kentinsesi.R.string.just_now)

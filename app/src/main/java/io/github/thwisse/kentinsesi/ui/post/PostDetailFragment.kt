@@ -369,7 +369,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             tvDetailDistrict.text = "Hatay, ${post.district ?: "-"}"
 
             tvDetailDate.text = post.createdAt?.toDate()?.let { date ->
-                val format = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+                val format = SimpleDateFormat("EEEE, dd MMM yyyy, HH:mm", Locale.getDefault())
                 format.format(date)
             } ?: ""
 

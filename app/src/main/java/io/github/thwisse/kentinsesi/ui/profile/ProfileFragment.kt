@@ -211,14 +211,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         binding.rvUserPosts.adapter = postAdapter
 
         // Comments adapter
-        // Comments adapter
         commentAdapter = UserCommentAdapter(
             onItemClick = { comment ->
                 // Yorumun ait olduğu post'a git
                 val bundle = Bundle().apply { putString("postId", comment.postId) }
                 // PostId boş olabilir (eski yorumlar için)
                 if (comment.postId.isNotBlank()) {
-                     findNavController().navigate(R.id.action_nav_profile_to_postDetailFragment, bundle)
+                    // Post'un var olup olmadığını kontrol et
+                    viewModel.checkPostExists(comment.postId) { exists ->
+                        if (exists) {
+                            findNavController().navigate(R.id.action_nav_profile_to_postDetailFragment, bundle)
+                        } else {
+                            Toast.makeText(requireContext(), "Bu post silinmiş", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Post detayına gidilemiyor", Toast.LENGTH_SHORT).show()
                 }
