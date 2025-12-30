@@ -37,7 +37,14 @@ class MainActivity : AppCompatActivity() {
         // Edge-to-edge padding ayarları
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
+            insets
+        }
+
+        // Sadece bottom nav'a sistem çubuğu boşluğunu uygula, barın yüksekliği şişmesin
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavView) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
             insets
         }
 

@@ -83,8 +83,8 @@
     <!-- Post Creation -->
     <string name="create_post_title">Yeni Paylaşım Oluştur</string>
     <string name="create_post_change_photo_hint">Fotoğrafı değiştirmek için tıklayın</string>
-    <string name="create_post_title_hint">Başlık (Örn: Çukur sorunu)</string>
-    <string name="create_post_district_hint">İlçe seçiniz</string>
+    <string name="create_post_title_hint">Başlık</string>
+    <string name="create_post_district_hint">İlçe</string>
     <string name="create_post_category_hint">Kategori</string>
     <string name="create_post_description_hint">Detaylı açıklama</string>
     <string name="create_post_location_waiting">Konum: Bekleniyor…</string>

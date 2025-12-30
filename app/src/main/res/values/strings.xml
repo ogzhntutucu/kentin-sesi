@@ -83,8 +83,8 @@
     <!-- Post Creation -->
     <string name="create_post_title">Create New Post</string>
     <string name="create_post_change_photo_hint">Tap to change photo</string>
-    <string name="create_post_title_hint">Title (e.g., Pothole issue)</string>
-    <string name="create_post_district_hint">Select district</string>
+    <string name="create_post_title_hint">Title</string>
+    <string name="create_post_district_hint">District</string>
     <string name="create_post_category_hint">Category</string>
     <string name="create_post_description_hint">Detailed description</string>
     <string name="create_post_location_waiting">Location: waiting…</string>
