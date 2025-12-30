@@ -1,63 +1,61 @@
 <resources>
+    <!-- App -->
     <string name="app_name">Kentin Sesi</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="yeni_bildirim_olustur">Yeni Paylaşım Oluştur</string>
-    <string name="e_posta">E-posta</string>
-    <string name="sifre">Şifre</string>
-    <string name="giris_yap">Giriş Yap</string>
-    <string name="hesabin_yok_mu_kayit_ol">Hesabın yok mu? Kayıt Ol</string>
+
+    <!-- Navigation -->
+    <string name="nav_feed">Ana Akış</string>
+    <string name="nav_map">Harita</string>
+    <string name="nav_notifications">Bildirimler</string>
+    <string name="nav_profile">Profil</string>
+
+    <!-- Legacy navigation names (used in XML) -->
     <string name="ana_akis">Ana Akış</string>
     <string name="harita">Harita</string>
     <string name="bildirimler">Bildirimler</string>
     <string name="profil">Profil</string>
 
-    <string name="location_selected">Konum Seçildi: %1$.4f, %2$.4f</string>
+    <!-- Legacy auth names (used in XML) -->
+    <string name="e_posta">E-posta</string>
+    <string name="sifre">Şifre</string>
+    <string name="giris_yap">Giriş Yap</string>
+    <string name="hesabin_yok_mu_kayit_ol">Hesabın yok mu? Kayıt Ol</string>
+    <string name="yeni_bildirim_olustur">Yeni Paylaşım Oluştur</string>
+
+    <!-- Legacy post strings (used in Kotlin) -->
     <string name="post_support_count">%1$d Destek</string>
     <string name="post_comment_count">%1$d Yorum</string>
     <string name="post_location_city_district">Hatay, %1$s</string>
     <string name="post_status_new">Yeni</string>
     <string name="post_status_in_progress">İşlemde</string>
     <string name="post_status_resolved">Çözüldü</string>
+    <string name="post_status_rejected">Reddedildi</string>
 
-    <string name="anonymous_user">Anonim</string>
-    <string name="reply_to_person">%1$s kişisine yanıt</string>
-    <string name="replies_count">%1$d yanıt</string>
-    <string name="just_now">Az önce</string>
-    <string name="reply_write_hint">Yanıt yaz…</string>
-    <string name="comment_write_hint">Bir yorum yaz…</string>
-    <string name="comments_header">Yorumlar (%1$d)</string>
+    <!-- Authentication -->
+    <string name="email">E-posta</string>
+    <string name="password">Şifre</string>
+    <string name="sign_in">Giriş Yap</string>
+    <string name="sign_up">Kayıt Ol</string>
+    <string name="no_account_sign_up">Hesabın yok mu? Kayıt Ol</string>
+    <string name="have_account_sign_in">Zaten hesabın var mı? Giriş Yap</string>
+    <string name="email_required">E-posta adresi gereklidir</string>
+    <string name="password_required">Şifre gereklidir</string>
+    <string name="login_success">Giriş başarılı!</string>
+    <string name="login_failed">Giriş başarısız: %1$s</string>
+    <string name="login_success_no_data">Giriş başarılı ancak veri alınamadı</string>
+    <string name="login_error">Giriş hatası</string>
+    <string name="registration_success">Kayıt başarılı! Lütfen profilini tamamla.</string>
+    <string name="registration_failed">Kayıt başarısız: %1$s</string>
+    <string name="registration_success_no_data">Kayıt başarılı ancak veri alınamadı</string>
+    <string name="registration_error">Kayıt hatası</string>
+    <string name="profile_error">Profil hatası</string>
+    <string name="user_data_not_found">Kullanıcı verisi alınamadı.</string>
+    <string name="user_session_not_found">Kullanıcı oturumu bulunamadı.</string>
+    <string name="sign_out">Çıkış Yap</string>
+    <string name="change_language">Dil Değiştir</string>
+    <string name="admin_panel">Admin Paneli</string>
+    <string name="theme">Temayı Değiştir</string>
 
-    <string name="cd_post_image">Paylaşım görseli</string>
-    <string name="cd_selected_photo">Seçilen fotoğraf</string>
-
-    <string name="cd_post_title_input">Başlık</string>
-    <string name="cd_post_description_input">Açıklama</string>
-    <string name="cd_profile_full_name_input">Ad soyad</string>
-    <string name="cd_profile_username_input">Kullanıcı adı</string>
-
-    <string name="cd_close">Kapat</string>
-    <string name="cd_send">Gönder</string>
-    <string name="cd_menu">Menü</string>
-
-    <string name="create_post_change_photo_hint">Fotoğrafı değiştirmek için tıklayın</string>
-    <string name="create_post_title_hint">Başlık (Örn: Çukur sorunu)</string>
-    <string name="create_post_district_hint">İlçe seçiniz</string>
-    <string name="create_post_category_hint">Kategori</string>
-    <string name="create_post_description_hint">Detaylı açıklama</string>
-    <string name="create_post_location_waiting">Konum: Bekleniyor…</string>
-    <string name="create_post_select_location">Haritadan konum seç</string>
-    <string name="create_post_share">Paylaş</string>
-    <string name="district_iskenderun">İskenderun</string>
-
-    <string name="filter_title">Paylaşımları filtrele</string>
-    <string name="filter_district">İlçe</string>
-    <string name="filter_category">Kategori</string>
-    <string name="filter_status">Durum</string>
-    <string name="filter_all">Tümü</string>
-    <string name="filter_only_my_posts">Sadece benim paylaşımlarım</string>
-    <string name="filter_save">Kaydet</string>
-    <string name="filter_apply">Uygula</string>
-
+    <!-- Profile Setup -->
     <string name="setup_profile_title">Profilini tamamla</string>
     <string name="setup_profile_subtitle">Daha iyi bir hizmet için seni tanımalıyız.</string>
     <string name="setup_profile_full_name_hint">Ad soyad</string>
@@ -66,8 +64,201 @@
     <string name="setup_profile_district_hint">İlçe</string>
     <string name="setup_profile_save_continue">Kaydet ve devam et</string>
     <string name="city_hatay">Hatay</string>
+    <string name="profile_save_success">Profil kaydedildi</string>
+    <string name="profile_save_error">Profil kaydedilemedi</string>
 
+    <!-- Profile -->
+    <string name="my_posts">Paylaşımlarım</string>
+    <string name="my_comments">Yorumlarım</string>
+    <string name="edit_profile">Profili Düzenle</string>
+    <string name="no_posts_yet">Henüz paylaşım yok</string>
+    <string name="no_comments_yet">Henüz yorum yok</string>
+    <string name="post_deleted">Bu post silinmiş</string>
+    <string name="cannot_go_to_post">Post detayına gidilemiyor</string>
+
+    <!-- Post Creation -->
+    <string name="create_post_title">Yeni Paylaşım Oluştur</string>
+    <string name="create_post_change_photo_hint">Fotoğrafı değiştirmek için tıklayın</string>
+    <string name="create_post_title_hint">Başlık (Örn: Çukur sorunu)</string>
+    <string name="create_post_district_hint">İlçe seçiniz</string>
+    <string name="create_post_category_hint">Kategori</string>
+    <string name="create_post_description_hint">Detaylı açıklama</string>
+    <string name="create_post_location_waiting">Konum: Bekleniyor…</string>
+    <string name="create_post_select_location">Haritadan konum seç</string>
+    <string name="create_post_share">Paylaş</string>
+    <string name="post_created_success">Paylaşım başarıyla oluşturuldu</string>
+    <string name="post_creation_failed">Paylaşım oluşturulamadı</string>
+    <string name="title_required">Başlık gereklidir</string>
+    <string name="description_required">Açıklama gereklidir</string>
+    <string name="category_required">Kategori gereklidir</string>
+    <string name="location_required">Konum gereklidir</string>
+    <string name="image_required">Görsel gereklidir</string>
+
+    <!-- Post Detail -->
     <string name="post_detail_support">Destekle</string>
+    <string name="post_detail_withdraw_support">Desteği Geri Çek</string>
     <string name="post_detail_description">Açıklama</string>
+    <string name="support_count">%1$d Destek</string>
+    <string name="comment_count">%1$d Yorum</string>
+    <string name="location_city_district">Hatay, %1$s</string>
+    <string name="delete_post">Paylaşımı Sil</string>
+    <string name="delete_post_confirm_title">Paylaşımı Sil</string>
+    <string name="delete_post_confirm_message">Bu paylaşımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="post_deleted_success">Paylaşım silindi</string>
+    <string name="post_delete_failed">Paylaşım silinemedi</string>
+
+    <!-- Post Status -->
+    <string name="status_new">Yeni</string>
+    <string name="status_in_progress">İşlemde</string>
+    <string name="status_resolved">Çözüldü</string>
+    <string name="status_rejected">Reddedildi</string>
+    <string name="status_new_badge">YENİ</string>
+    <string name="status_in_progress_badge">İŞLEMDE</string>
+    <string name="status_resolved_badge">ÇÖZÜLDÜ</string>
+    <string name="status_rejected_badge">REDDEDİLDİ</string>
+
+    <!-- Comments -->
+    <string name="comments_header">Yorumlar (%1$d)</string>
     <string name="comments_header_initial">Yorumlar (0)</string>
+    <string name="comment_write_hint">Bir yorum yaz…</string>
+    <string name="reply_write_hint">Yanıt yaz…</string>
+    <string name="reply_to_person">%1$s kişisine yanıt</string>
+    <string name="replies_count">%1$d yanıt</string>
+    <string name="comment_added">Yorum eklendi</string>
+    <string name="comment_add_failed">Yorum eklenemedi</string>
+    <string name="reply_added">Yanıt eklendi</string>
+    <string name="reply_add_failed">Yanıt eklenemedi</string>
+    <string name="comment_deleted">Yorum silindi</string>
+    <string name="comment_deleted_by_user">Bu yorum kullanıcı tarafından silindi.</string>
+    <string name="comment_deleted_by_admin">Bu yorum yönetici tarafından silindi.</string>
+    <string name="comment_delete_failed">Yorum silinemedi</string>
+    <string name="comment_empty">Yorum boş olamaz</string>
+    <string name="post_id_not_found">Post ID bulunamadı</string>
+    <string name="just_now">Az önce</string>
+    <string name="anonymous_user">Anonim</string>
+
+    <!-- Status Updates -->
+    <string name="status_updates">Güncellemeler</string>
+    <string name="status_updates_count">Güncellemeler (%d)</string>
+    <string name="status_update_dialog_title">Durumu Güncelle</string>
+    <string name="status_update_note_hint">Not ekleyin (zorunlu)</string>
+    <string name="status_update_note_empty">Not alanı boş bırakılamaz</string>
+    <string name="status_update_success">Durum güncellendi</string>
+    <string name="status_update_error">Güncelleme başarısız</string>
+    <string name="no_status_updates">Henüz güncelleme yok</string>
+    <string name="initial_status_note">Paylaşım yapıldı</string>
+    <string name="update_status">Durumu Güncelle</string>
+
+    <!-- Filters -->
+    <string name="filter_title">Paylaşımları filtrele</string>
+    <string name="filter_district">İlçe</string>
+    <string name="filter_category">Kategori</string>
+    <string name="filter_status">Durum</string>
+    <string name="filter_all">Tümü</string>
+    <string name="filter_only_my_posts">Sadece benim paylaşımlarım</string>
+    <string name="filter_save">Kaydet</string>
+    <string name="filter_apply">Uygula</string>
+    <string name="filter_reset">Sıfırla</string>
+    <string name="filter_cancel">İptal</string>
+    <string name="filter_dialog_title">Filtre</string>
+    <string name="filter_my_filters">Filtrelerim</string>
+    <string name="filter_new_filter">Yeni filtre ayarla</string>
+    <string name="filter_applied">Filtreler uygulandı</string>
+    <string name="filter_save_dialog_title">Filtreyi kaydet</string>
+    <string name="filter_name_hint">Filtre adı</string>
+    <string name="filter_saved">Filtre kaydedildi</string>
+    <string name="filter_save_failed">Filtre kaydedilemedi</string>
+    <string name="filter_select_district">İlçe Seç</string>
+    <string name="filter_select_category">Kategori Seç</string>
+    <string name="filter_select_status">Durum Seç</string>
+    <string name="filter_select_all">Tümünü Seç</string>
+    <string name="filter_deselect_all">Tümünü Kaldır</string>
+    <string name="filter_options_count">%1$d seçenek</string>
+    <string name="filter_districts_label">İlçeler:</string>
+    <string name="filter_categories_label">Kategoriler:</string>
+    <string name="filter_statuses_label">Durumlar:</string>
+    <string name="filter_only_mine_label">Sadece benim paylaşımlarım:</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+
+    <!-- Categories -->
+    <string name="category_infrastructure">Altyapı (Yol/Su)</string>
+    <string name="category_cleaning">Temizlik/Çöp</string>
+    <string name="category_park">Park/Bahçe</string>
+    <string name="category_lighting">Aydınlatma</string>
+    <string name="category_traffic">Trafik</string>
+    <string name="category_other">Diğer</string>
+
+    <!-- Validation -->
+    <string name="validation_field_required">Bu alan zorunludur</string>
+    <string name="validation_email_invalid">Lütfen geçerli bir e-posta adresi girin</string>
+    <string name="validation_password_min_length">Şifre en az 6 karakter olmalıdır</string>
+    <string name="validation_username_min_length">Kullanıcı adı en az 3 karakter olmalıdır</string>
+    <string name="validation_username_max_length">Kullanıcı adı en fazla 20 karakter olabilir</string>
+    <string name="validation_username_invalid">Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir</string>
+    <string name="validation_fullname_min_length">Ad soyad en az 2 karakter olmalıdır</string>
+    <string name="validation_title_min_length">Başlık en az 3 karakter olmalıdır</string>
+    <string name="validation_title_max_length">Başlık en fazla 100 karakter olabilir</string>
+    <string name="validation_description_min_length">Açıklama en az 10 karakter olmalıdır</string>
+    <string name="validation_description_max_length">Açıklama en fazla 2000 karakter olabilir</string>
+    <string name="validation_comment_min_length">Yorum en az 1 karakter olmalıdır</string>
+    <string name="validation_comment_max_length">Yorum en fazla 500 karakter olabilir</string>
+
+    <!-- Common -->
+    <string name="loading">Yükleniyor…</string>
+    <string name="error">Hata</string>
+    <string name="success">Başarılı</string>
+    <string name="ok">Tamam</string>
+    <string name="cancel">İptal</string>
+    <string name="delete">Sil</string>
+    <string name="save">Kaydet</string>
+    <string name="edit">Düzenle</string>
+    <string name="close">Kapat</string>
+    <string name="send">Gönder</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="menu">Menü</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_delete_comment_title">Yorumu Sil</string>
+    <string name="dialog_delete_comment_message">Bu yorumun içeriği silinecek. Emin misiniz?</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_post_image">Paylaşım görseli</string>
+    <string name="cd_selected_photo">Seçilen fotoğraf</string>
+    <string name="cd_post_title_input">Başlık</string>
+    <string name="cd_post_description_input">Açıklama</string>
+    <string name="cd_profile_full_name_input">Ad soyad</string>
+    <string name="cd_profile_username_input">Kullanıcı adı</string>
+    <string name="cd_close">Kapat</string>
+    <string name="cd_send">Gönder</string>
+    <string name="cd_menu">Menü</string>
+
+    <!-- Language -->
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_english">İngilizce</string>
+    <string name="language_system">Sistem Dili</string>
+    <string name="language_select_title">Dil Seç</string>
+    <string name="language_change_restart">Dil değişikliği uygulama yeniden başlatıldıktan sonra geçerli olacak.</string>
+
+    <!-- Location -->
+    <string name="location_selected">Konum seçildi: %1$.4f, %2$.4f</string>
+    <string name="location_problem">Problem Konumu</string>
+
+    <!-- Districts (Hatay) -->
+    <string name="district_altinözu">Altınözü</string>
+    <string name="district_antakya">Antakya</string>
+    <string name="district_arsuz">Arsuz</string>
+    <string name="district_belen">Belen</string>
+    <string name="district_defne">Defne</string>
+    <string name="district_dortyol">Dörtyol</string>
+    <string name="district_erzin">Erzin</string>
+    <string name="district_hassa">Hassa</string>
+    <string name="district_iskenderun">İskenderun</string>
+    <string name="district_kirikhan">Kırıkhan</string>
+    <string name="district_kumlu">Kumlu</string>
+    <string name="district_payas">Payas</string>
+    <string name="district_reyhanli">Reyhanlı</string>
+    <string name="district_samandag">Samandağ</string>
+    <string name="district_yayladag">Yayladağı</string>
+
 </resources>

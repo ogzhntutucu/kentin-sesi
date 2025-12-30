@@ -25,6 +25,7 @@ import io.github.thwisse.kentinsesi.databinding.FragmentProfileBinding
 import io.github.thwisse.kentinsesi.ui.AuthActivity
 import io.github.thwisse.kentinsesi.ui.home.PostAdapter
 import io.github.thwisse.kentinsesi.util.Resource
+import io.github.thwisse.kentinsesi.util.LocaleHelper
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -81,6 +82,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
+                    R.id.action_language -> {
+                        showLanguageDialog()
+                        true
+                    }
                     R.id.action_admin_panel -> {
                         findNavController().navigate(R.id.action_nav_profile_to_adminPanelFragment)
                         true
@@ -97,6 +102,30 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showLanguageDialog() {
+        val currentLanguage = LocaleHelper.getPersistedLanguage(requireContext())
+        
+        val options = arrayOf(
+            getString(R.string.language_system),
+            getString(R.string.language_turkish),
+            getString(R.string.language_english)
+        )
+        val values = arrayOf(LocaleHelper.LANGUAGE_SYSTEM, LocaleHelper.LANGUAGE_TURKISH, LocaleHelper.LANGUAGE_ENGLISH)
+        val checkedIndex = values.indexOf(currentLanguage).takeIf { it >= 0 } ?: 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.language_select_title))
+            .setSingleChoiceItems(options, checkedIndex) { dialog, which ->
+                val selected = values.getOrNull(which) ?: LocaleHelper.LANGUAGE_SYSTEM
+                if (selected != currentLanguage) {
+                    LocaleHelper.setLocaleAndRestart(requireContext(), selected)
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     private fun showThemeDialog() {

@@ -3,18 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_language"
+        android:title="@string/change_language"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_admin_panel"
-        android:title="Admin Paneli"
+        android:title="@string/admin_panel"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_theme"
-        android:title="Tema"
+        android:title="@string/theme"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_logout"
-        android:title="Çıkış Yap"
+        android:title="@string/sign_out"
         app:showAsAction="never" />
 
 </menu>
