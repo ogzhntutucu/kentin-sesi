@@ -54,6 +54,10 @@
     <string name="change_language">Dil Değiştir</string>
     <string name="admin_panel">Admin Paneli</string>
     <string name="theme">Temayı Değiştir</string>
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+    <string name="theme_select_title">Tema Seç</string>
 
     <!-- Profile Setup -->
     <string name="setup_profile_title">Profilini tamamla</string>
@@ -145,9 +149,14 @@
     <string name="status_update_note_empty">Not alanı boş bırakılamaz</string>
     <string name="status_update_success">Durum güncellendi</string>
     <string name="status_update_error">Güncelleme başarısız</string>
+    <string name="status_update_no_permission">Durum güncellemek için yetkiniz yok</string>
     <string name="no_status_updates">Henüz güncelleme yok</string>
     <string name="initial_status_note">Paylaşım yapıldı</string>
     <string name="update_status">Durumu Güncelle</string>
+
+    <!-- Post Creation -->
+    <string name="photo_required">Lütfen bir fotoğraf seçiniz.</string>
+    <string name="location_not_selected">Lütfen haritadan bir konum seçiniz.</string>
 
     <!-- Filters -->
     <string name="filter_title">Paylaşımları filtrele</string>
@@ -180,6 +189,8 @@
     <string name="filter_only_mine_label">Sadece benim paylaşımlarım:</string>
     <string name="yes">Evet</string>
     <string name="no">Hayır</string>
+    <string name="filter_delete_title">Filtreyi sil</string>
+    <string name="filter_delete_message">\'%1$s\' filtresi silinsin mi?</string>
 
     <!-- Categories -->
     <string name="category_infrastructure">Altyapı (Yol/Su)</string>

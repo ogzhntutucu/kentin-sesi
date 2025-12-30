@@ -63,10 +63,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun showFilterChoiceDialog() {
-        val items = arrayOf("Filtrelerim", "Yeni filtre ayarla")
+        val items = arrayOf(getString(R.string.filter_my_filters), getString(R.string.filter_new_filter))
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Filtre")
+            .setTitle(getString(R.string.filter_dialog_title))
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> {
@@ -83,7 +83,7 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
-            .setNegativeButton("İptal", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -115,7 +115,7 @@ class HomeFragment : Fragment() {
             )
 
             // Kullanıcıya bilgi ver
-            Toast.makeText(requireContext(), "Filtreler uygulandı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.filter_applied), Toast.LENGTH_SHORT).show()
         }
     }
 

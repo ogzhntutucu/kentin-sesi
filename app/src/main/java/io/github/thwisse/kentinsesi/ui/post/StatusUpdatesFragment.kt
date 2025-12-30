@@ -36,7 +36,7 @@ class StatusUpdatesFragment : Fragment(R.layout.fragment_status_updates) {
         // PostId'yi al
         currentPostId = arguments?.getString("postId")
         if (currentPostId == null) {
-            Toast.makeText(requireContext(), "Post ID bulunamadı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.post_id_not_found), Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
             return
         }
@@ -69,7 +69,7 @@ class StatusUpdatesFragment : Fragment(R.layout.fragment_status_updates) {
                 if (canUpdate) {
                     showUpdateStatusDialog()
                 } else {
-                    Toast.makeText(requireContext(), "Durum güncellemek için yetkiniz yok", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.status_update_no_permission), Toast.LENGTH_SHORT).show()
                 }
                 true
             }

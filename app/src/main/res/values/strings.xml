@@ -54,6 +54,10 @@
     <string name="change_language">Change Language</string>
     <string name="admin_panel">Admin Panel</string>
     <string name="theme">Change Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_select_title">Select Theme</string>
 
     <!-- Profile Setup -->
     <string name="setup_profile_title">Complete your profile</string>
@@ -145,9 +149,14 @@
     <string name="status_update_note_empty">Note field cannot be empty</string>
     <string name="status_update_success">Status updated</string>
     <string name="status_update_error">Update failed</string>
+    <string name="status_update_no_permission">You don\'t have permission to update status</string>
     <string name="no_status_updates">No updates yet</string>
     <string name="initial_status_note">Post created</string>
     <string name="update_status">Update Status</string>
+
+    <!-- Post Creation -->
+    <string name="photo_required">Please select a photo.</string>
+    <string name="location_not_selected">Please select a location from the map.</string>
 
     <!-- Filters -->
     <string name="filter_title">Filter posts</string>
@@ -180,6 +189,8 @@
     <string name="filter_only_mine_label">Only my posts:</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="filter_delete_title">Delete filter</string>
+    <string name="filter_delete_message">Delete \'%1$s\' filter?</string>
 
     <!-- Categories -->
     <string name="category_infrastructure">Infrastructure (Road/Water)</string>

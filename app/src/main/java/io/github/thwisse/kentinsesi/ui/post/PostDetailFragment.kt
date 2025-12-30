@@ -332,7 +332,7 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
         viewModel.deletePostState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Post silindi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.post_deleted_success), Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }
                 is Resource.Error -> Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
@@ -344,13 +344,13 @@ class PostDetailFragment : Fragment(io.github.thwisse.kentinsesi.R.layout.fragme
             when (resource) {
                 is Resource.Success -> {
                     val statusText = when (lastRequestedStatus) {
-                        PostStatus.NEW -> "Yeni"
-                        PostStatus.IN_PROGRESS -> "İşlemde"
-                        PostStatus.RESOLVED -> "Çözüldü"
-                        PostStatus.REJECTED -> "Reddedildi"
-                        else -> "Güncellendi"
+                        PostStatus.NEW -> getString(R.string.status_new)
+                        PostStatus.IN_PROGRESS -> getString(R.string.status_in_progress)
+                        PostStatus.RESOLVED -> getString(R.string.status_resolved)
+                        PostStatus.REJECTED -> getString(R.string.status_rejected)
+                        else -> getString(R.string.status_update_success)
                     }
-                    Toast.makeText(requireContext(), "Durum güncellendi: $statusText", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "${getString(R.string.status_update_success)}: $statusText", Toast.LENGTH_SHORT).show()
 
                     // ViewModel optimistic update yaptı, ekranı da güncelle
                     viewModel.currentPost.value?.let { setupViews(it) }

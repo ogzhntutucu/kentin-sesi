@@ -159,7 +159,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             val titleError = ValidationUtils.getValidationError("title", title)
             when {
                 title.isEmpty() -> {
-                    binding.etTitle.error = "Başlık gereklidir"
+                    binding.etTitle.error = getString(R.string.title_required)
                     binding.etTitle.requestFocus()
                     hasError = true
                 }
@@ -174,7 +174,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             val descriptionError = ValidationUtils.getValidationError("description", description)
             when {
                 description.isEmpty() -> {
-                    binding.etDescription.error = "Açıklama gereklidir"
+                    binding.etDescription.error = getString(R.string.description_required)
                     if (!hasError) {
                         binding.etDescription.requestFocus()
                         hasError = true
@@ -191,7 +191,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
             // Kategori kontrolü
             if (category.isEmpty()) {
-                binding.actvCategory.error = "Kategori seçilmelidir"
+                binding.actvCategory.error = getString(R.string.category_required)
                 if (!hasError) {
                     binding.actvCategory.requestFocus()
                     hasError = true
@@ -200,13 +200,13 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
             // Fotoğraf kontrolü
             if (selectedImageUri == null) {
-                Toast.makeText(requireContext(), "Lütfen bir fotoğraf seçiniz.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.photo_required), Toast.LENGTH_SHORT).show()
                 hasError = true
             }
 
             // Konum kontrolü
             if (currentLatitude == null || currentLongitude == null) {
-                Toast.makeText(requireContext(), "Lütfen haritadan bir konum seçiniz.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.location_not_selected), Toast.LENGTH_SHORT).show()
                 hasError = true
             }
 
@@ -274,7 +274,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                 is Resource.Success -> {
                     binding.progressBar.visibility = View.GONE
                     binding.btnShare.isEnabled = true
-                    Toast.makeText(requireContext(), "Paylaşım başarılı!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.post_created_success), Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }
                 is Resource.Error -> {

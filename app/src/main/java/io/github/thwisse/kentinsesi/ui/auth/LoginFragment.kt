@@ -57,7 +57,7 @@ class LoginFragment : Fragment() {
 
             when {
                 email.isEmpty() -> {
-                    binding.etEmail.error = "E-posta adresi gereklidir"
+                    binding.etEmail.error = getString(R.string.email_required)
                     binding.etEmail.requestFocus()
                     return@setOnClickListener
                 }
@@ -67,7 +67,7 @@ class LoginFragment : Fragment() {
                     return@setOnClickListener
                 }
                 password.isEmpty() -> {
-                    binding.etPassword.error = "Şifre gereklidir"
+                    binding.etPassword.error = getString(R.string.password_required)
                     binding.etPassword.requestFocus()
                     return@setOnClickListener
                 }
@@ -103,9 +103,9 @@ class LoginFragment : Fragment() {
                     when (state) {
                         is AuthState.Success -> {
                             // Giriş başarılı, MainActivity'ye yönlendir
-                            Toast.makeText(requireContext(), "Giriş başarılı!", Toast.LENGTH_SHORT)
+                            Toast.makeText(requireContext(), getString(R.string.login_success), Toast.LENGTH_SHORT)
                                 .show()
-                            Log.d("LoginFragment", "Giriş başarılı!")
+                            Log.d("LoginFragment", "Login successful!")
                             navigateToMain()
                         }
 
@@ -113,10 +113,10 @@ class LoginFragment : Fragment() {
                             // Hata mesajını göster
                             Toast.makeText(
                                 requireContext(),
-                                "Giriş başarısız: ${state.message}",
+                                getString(R.string.login_failed, state.message),
                                 Toast.LENGTH_LONG
                             ).show()
-                            Log.e("LoginFragment", "Giriş başarısız: ${state.message}")
+                            Log.e("LoginFragment", "Login failed: ${state.message}")
                         }
 
                         AuthState.Idle -> {

@@ -34,7 +34,7 @@ object LocaleHelper {
      */
     fun setPersistedLanguage(context: Context, language: String) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_LANGUAGE, language).apply()
+        prefs.edit().putString(KEY_LANGUAGE, language).commit() // commit() for synchronous write before restart
     }
 
     /**

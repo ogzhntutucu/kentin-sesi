@@ -132,12 +132,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val prefs = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
         val current = prefs.getString("theme_mode", "system")
 
-        val options = arrayOf("Sistem", "Açık", "Koyu")
+        val options = arrayOf(
+            getString(R.string.theme_system),
+            getString(R.string.theme_light),
+            getString(R.string.theme_dark)
+        )
         val values = arrayOf("system", "light", "dark")
         val checkedIndex = values.indexOf(current).takeIf { it >= 0 } ?: 0
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Tema")
+            .setTitle(getString(R.string.theme_select_title))
             .setSingleChoiceItems(options, checkedIndex) { dialog, which ->
                 val selected = values.getOrNull(which) ?: "system"
                 prefs.edit().putString("theme_mode", selected).apply()
@@ -151,7 +155,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 requireActivity().recreate()
                 dialog.dismiss()
             }
-            .setNegativeButton("İptal") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 

@@ -44,7 +44,7 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         // Get postId from arguments
         currentPostId = arguments?.getString("postId")
         if (currentPostId == null) {
-            Toast.makeText(requireContext(), "Post ID bulunamadı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.post_id_not_found), Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
             return
         }
@@ -119,7 +119,7 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
                     binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Resource.Error -> {
-                    Toast.makeText(requireContext(), resource.message ?: "Hata", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), resource.message ?: getString(R.string.error), Toast.LENGTH_SHORT).show()
                     binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Resource.Loading -> {}
@@ -130,14 +130,14 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         viewModel.addCommentState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Yorum eklendi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.comment_added), Toast.LENGTH_SHORT).show()
                     hideKeyboard()
                     currentPostId?.let { viewModel.getComments(it) }
                 }
                 is Resource.Error -> {
                     Toast.makeText(
                         requireContext(),
-                        resource.message ?: "Yorum eklenemedi",
+                        resource.message ?: getString(R.string.comment_add_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -149,7 +149,7 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         viewModel.addReplyState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Yanıt eklendi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.reply_added), Toast.LENGTH_SHORT).show()
                     cancelReplyMode()
                     hideKeyboard()
                     currentPostId?.let { viewModel.getComments(it) }
@@ -157,7 +157,7 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
                 is Resource.Error -> {
                     Toast.makeText(
                         requireContext(),
-                        resource.message ?: "Yanıt eklenemedi",
+                        resource.message ?: getString(R.string.reply_add_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -169,13 +169,13 @@ class CommentsFragment : Fragment(R.layout.fragment_comments) {
         viewModel.deleteCommentState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    Toast.makeText(requireContext(), "Yorum silindi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.comment_deleted), Toast.LENGTH_SHORT).show()
                     currentPostId?.let { viewModel.getComments(it) }
                 }
                 is Resource.Error -> {
                     Toast.makeText(
                         requireContext(),
-                        resource.message ?: "Yorum silinemedi",
+                        resource.message ?: getString(R.string.comment_delete_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }

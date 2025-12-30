@@ -57,7 +57,7 @@ class RegisterFragment : Fragment() {
 
             when {
                 email.isEmpty() -> {
-                    binding.etEmail.error = "E-posta adresi gereklidir"
+                    binding.etEmail.error = getString(R.string.email_required)
                     binding.etEmail.requestFocus()
                     return@setOnClickListener
                 }
@@ -67,7 +67,7 @@ class RegisterFragment : Fragment() {
                     return@setOnClickListener
                 }
                 password.isEmpty() -> {
-                    binding.etPassword.error = "Şifre gereklidir"
+                    binding.etPassword.error = getString(R.string.password_required)
                     binding.etPassword.requestFocus()
                     return@setOnClickListener
                 }
@@ -98,7 +98,7 @@ class RegisterFragment : Fragment() {
 
                     when (state) {
                         is AuthState.Success -> {
-                            Toast.makeText(requireContext(), "Kayıt başarılı! Lütfen profilini tamamla.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), getString(R.string.registration_success), Toast.LENGTH_SHORT).show()
 
                             // DİKKAT: Artık navigateToMain() YOK.
                             // auth_nav_graph içinde bir sonraki adıma geçiyoruz:
@@ -108,10 +108,10 @@ class RegisterFragment : Fragment() {
                         is AuthState.Error -> {
                             Toast.makeText(
                                 requireContext(),
-                                "Kayıt başarısız: ${state.message}",
+                                getString(R.string.registration_failed, state.message),
                                 Toast.LENGTH_LONG
                             ).show()
-                            Log.e("RegisterFragment", "Kayıt başarısız: ${state.message}")
+                            Log.e("RegisterFragment", "Registration failed: ${state.message}")
                         }
 
                         AuthState.Idle -> {}

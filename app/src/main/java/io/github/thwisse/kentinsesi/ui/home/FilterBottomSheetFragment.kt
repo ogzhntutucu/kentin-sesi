@@ -19,6 +19,7 @@ import io.github.thwisse.kentinsesi.databinding.DialogFilterOptionsBinding
 import io.github.thwisse.kentinsesi.databinding.FragmentFilterBottomSheetBinding
 import io.github.thwisse.kentinsesi.util.Resource
 import kotlinx.coroutines.launch
+import io.github.thwisse.kentinsesi.R
 
 @AndroidEntryPoint
 class FilterBottomSheetFragment : BottomSheetDialogFragment() {
@@ -45,10 +46,10 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         "Altyapı (Yol/Su)", "Temizlik/Çöp", "Park/Bahçe", "Aydınlatma", "Trafik", "Diğer"
     )
     
-    private val statusLabels = mapOf(
-        "new" to "Yeni",
-        "in_progress" to "İşlemde",
-        "resolved" to "Çözüldü"
+    private fun getStatusLabels(): Map<String, String> = mapOf(
+        "new" to getString(R.string.status_new),
+        "in_progress" to getString(R.string.status_in_progress),
+        "resolved" to getString(R.string.status_resolved)
     )
 
     override fun onCreateView(
@@ -81,14 +82,14 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun showSavePresetDialog() {
         val input = EditText(requireContext()).apply {
-            hint = "Filtre adı"
+            hint = getString(R.string.filter_name_hint)
         }
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Filtreyi kaydet")
+            .setTitle(getString(R.string.filter_save_dialog_title))
             .setView(input)
-            .setNegativeButton("İptal", null)
-            .setPositiveButton("Kaydet") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.save)) { _, _ ->
                 val name = input.text?.toString().orEmpty().trim()
 
                 val criteria = FilterCriteria(
@@ -101,11 +102,11 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     when (val result = viewModel.savePresetNow(name, criteria)) {
                         is Resource.Success -> {
-                            Toast.makeText(requireContext(), "Filtre kaydedildi", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), getString(R.string.filter_saved), Toast.LENGTH_SHORT).show()
                             dismiss()
                         }
                         is Resource.Error -> {
-                            Toast.makeText(requireContext(), result.message ?: "Filtre kaydedilemedi", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), result.message ?: getString(R.string.filter_save_failed), Toast.LENGTH_SHORT).show()
                         }
                         is Resource.Loading -> {
                             // no-op
@@ -120,7 +121,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         // İlçe filtresine tıkla
         binding.cvDistrict.setOnClickListener {
             showFilterOptionsDialog(
-                title = "İlçe Seç",
+                title = getString(R.string.filter_select_district),
                 items = districts,
                 selectedItems = selectedDistricts,
                 onSave = { selected ->
@@ -133,7 +134,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         // Kategori filtresine tıkla
         binding.cvCategory.setOnClickListener {
             showFilterOptionsDialog(
-                title = "Kategori Seç",
+                title = getString(R.string.filter_select_category),
                 items = categories,
                 selectedItems = selectedCategories,
                 onSave = { selected ->
@@ -145,13 +146,14 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Durum filtresine tıkla
         binding.cvStatus.setOnClickListener {
+            val statusLabels = getStatusLabels()
             val statusDisplayItems = statusLabels.values.toList()
             val selectedStatusDisplay: Set<String> = selectedStatuses.mapNotNull { statusKey ->
                 statusLabels[statusKey]
             }.toSet()
             
             showFilterOptionsDialog(
-                title = "Durum Seç",
+                title = getString(R.string.filter_select_status),
                 items = statusDisplayItems,
                 selectedItems = selectedStatusDisplay,
                 onSave = { selected ->
@@ -204,7 +206,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         fun updateSelectAllButton(adapter: FilterCheckboxAdapter, binding: DialogFilterOptionsBinding, totalCount: Int) {
             val selectedCount = adapter.getSelectedItems().size
             val allSelected = selectedCount == totalCount
-            binding.btnSelectAll.text = if (allSelected) "Tümünü Kaldır" else "Tümünü Seç"
+            binding.btnSelectAll.text = if (allSelected) getString(R.string.filter_deselect_all) else getString(R.string.filter_select_all)
         }
         
         // Adapter'ı lateinit var olarak tanımla (callback içinde kullanmak için)
@@ -299,14 +301,15 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
         )
 
         // Durum özeti - Önce key'leri display name'e çevir
+        val statusLabels = getStatusLabels()
         val selectedStatusDisplay: List<String> = selectedStatuses.mapNotNull { statusKey ->
             statusLabels[statusKey]
         }
         binding.tvStatusSummary.text = when {
-            selectedStatuses.isEmpty() -> "Tümü"
-            selectedStatuses.size == statusLabels.size -> "Tümü"
-            selectedStatuses.size == 1 -> selectedStatusDisplay.firstOrNull() ?: "Tümü"
-            else -> "${selectedStatuses.size} seçenek"
+            selectedStatuses.isEmpty() -> getString(R.string.filter_all)
+            selectedStatuses.size == statusLabels.size -> getString(R.string.filter_all)
+            selectedStatuses.size == 1 -> selectedStatusDisplay.firstOrNull() ?: getString(R.string.filter_all)
+            else -> getString(R.string.filter_options_count, selectedStatuses.size)
         }
     }
     
@@ -318,10 +321,10 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun getFilterSummary(selectedItems: Set<String>, totalItems: Int): String {
         return when {
-            selectedItems.isEmpty() -> "Tümü"
-            selectedItems.size == totalItems -> "Tümü"
+            selectedItems.isEmpty() -> getString(R.string.filter_all)
+            selectedItems.size == totalItems -> getString(R.string.filter_all)
             selectedItems.size == 1 -> selectedItems.first()
-            else -> "${selectedItems.size} seçenek"
+            else -> getString(R.string.filter_options_count, selectedItems.size)
         }
     }
 
