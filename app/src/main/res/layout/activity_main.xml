@@ -17,10 +17,11 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="45dp"
             android:background="?attr/colorPrimary"
             app:title="Kentin Sesi"
             app:titleCentered="true"
+            app:titleTextAppearance="@style/ToolbarTitle"
             app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -47,4 +47,13 @@
     <color name="statusInProgress">#FAAD14</color>
     <color name="statusResolved">#52C41A</color>
     <color name="statusRejected">#FF4D4F</color>
+
+    <!-- Nested Comment Backgrounds (Dark) -->
+    <!-- Subtle variations of dark gray/green to distinguish layers without blinding -->
+    <color name="color_comment_bg_0">#1A1A1A</color>
+    <color name="color_comment_bg_1">#242424</color>
+    <color name="color_comment_bg_2">#1F2923</color> <!-- Slight Green Tint -->
+    <color name="color_comment_bg_3">#2E2E2E</color>
+    <color name="color_comment_bg_4">#1A1A1A</color>
+    <color name="colorCommentText">#E6E6E6</color>
 </resources>

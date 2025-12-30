@@ -48,6 +48,14 @@
     <color name="statusResolved">#52C41A</color>     <!-- Green - Çözüldü -->
     <color name="statusRejected">#FF4D4F</color>     <!-- Red - Reddedildi -->
     
+    <!-- Nested Comment Backgrounds (Light) -->
+    <color name="color_comment_bg_0">#E3F2FD</color>
+    <color name="color_comment_bg_1">#FFEBEE</color>
+    <color name="color_comment_bg_2">#E8F5E9</color>
+    <color name="color_comment_bg_3">#F3E5F5</color>
+    <color name="color_comment_bg_4">#FFFDE7</color>
+    <color name="colorCommentText">#333333</color>
+
     <!-- Legacy (Backwards Compatibility) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

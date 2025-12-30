@@ -74,8 +74,8 @@ class CommentAdapter(
                 binding.root.setOnLongClickListener(null)
             } else {
                 binding.tvCommentText.setTypeface(null, android.graphics.Typeface.NORMAL)
-                // Sabit koyu renk kullan - tema rengine güvenme
-                binding.tvCommentText.setTextColor(Color.parseColor("#333333"))
+                // Text Color from Theme
+                binding.tvCommentText.setTextColor(androidx.core.content.ContextCompat.getColor(context, io.github.thwisse.kentinsesi.R.color.colorCommentText))
 
                 binding.tvCommentText.text = comment.text
                 
@@ -128,14 +128,14 @@ class CommentAdapter(
             val indent = (comment.depth.coerceIn(0, Constants.MAX_COMMENT_DEPTH) * 12 * density).toInt()
             
             val depth = comment.depth.coerceIn(0, 4)
-            val bg = when (depth) {
-                0 -> Color.parseColor("#E3F2FD")
-                1 -> Color.parseColor("#FFEBEE")
-                2 -> Color.parseColor("#E8F5E9")
-                3 -> Color.parseColor("#F3E5F5")
-                else -> Color.parseColor("#FFFDE7")
+            val bgResId = when (depth) {
+                0 -> io.github.thwisse.kentinsesi.R.color.color_comment_bg_0
+                1 -> io.github.thwisse.kentinsesi.R.color.color_comment_bg_1
+                2 -> io.github.thwisse.kentinsesi.R.color.color_comment_bg_2
+                3 -> io.github.thwisse.kentinsesi.R.color.color_comment_bg_3
+                else -> io.github.thwisse.kentinsesi.R.color.color_comment_bg_4
             }
-            binding.root.setCardBackgroundColor(bg)
+            binding.root.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(context, bgResId))
 
             val lp = binding.root.layoutParams
             if (lp is MarginLayoutParams) {
