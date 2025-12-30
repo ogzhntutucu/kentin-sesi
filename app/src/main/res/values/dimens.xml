@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- ANT DESIGN MOBILE V5 - DIMENSION TOKENS     -->
+    <!-- ============================================ -->
+    
+    <!-- Corner Radius -->
+    <dimen name="radius_xs">4dp</dimen>
+    <dimen name="radius_s">8dp</dimen>
+    <dimen name="radius_m">12dp</dimen>
+    <dimen name="radius_l">16dp</dimen>
+    <dimen name="radius_xl">24dp</dimen>
+    <dimen name="radius_capsule">999dp</dimen>
+    
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_s">8dp</dimen>
+    <dimen name="spacing_m">12dp</dimen>
+    <dimen name="spacing_l">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    <dimen name="spacing_xxl">32dp</dimen>
+    
+    <!-- Component Heights (Touch-friendly 48dp minimum) -->
+    <dimen name="height_button">48dp</dimen>
+    <dimen name="height_input">48dp</dimen>
+    <dimen name="height_list_item">56dp</dimen>
+    
+    <!-- Elevation (Ant prefers flat) -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_card">0dp</dimen>
+    <dimen name="elevation_dialog">8dp</dimen>
+</resources>

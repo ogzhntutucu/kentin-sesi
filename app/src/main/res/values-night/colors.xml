@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- ANT DESIGN MOBILE V5 - DARK MODE COLORS     -->
+    <!-- MINT GREEN BRAND PALETTE (Desaturated)      -->
+    <!-- ============================================ -->
+    
+    <!-- Brand - Mint Green (Eye-friendly for dark) -->
+    <color name="colorPrimary">#00965E</color>
+    <color name="colorPrimaryVariant">#007A4D</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    
+    <!-- Neutral - Backgrounds (AMOLED Black) -->
+    <color name="colorBackground">#000000</color>
+    <color name="colorSurface">#141414</color>
+    <color name="colorSurfaceVariant">#1F1F1F</color>
+    <color name="colorOnSurface">#E6E6E6</color>
+    
+    <!-- Typography -->
+    <color name="colorTextPrimary">#E6E6E6</color>
+    <color name="colorTextSecondary">#A6A6A6</color>
+    <color name="colorTextTertiary">#595959</color>
+    
+    <!-- Border & Divider -->
+    <color name="colorBorder">#303030</color>
+    <color name="colorDivider">#262626</color>
+    
+    <!-- Functional States (Same as Light) -->
+    <color name="colorSuccess">#52C41A</color>
+    <color name="colorError">#FF4D4F</color>
+    <color name="colorWarning">#FAAD14</color>
+    <color name="colorInfo">#00965E</color>
+    
+    <!-- Status Badges -->
+    <color name="statusNew">#00965E</color>          <!-- Mint (Dark) -->
+    <color name="statusInProgress">#FAAD14</color>
+    <color name="statusResolved">#52C41A</color>
+    <color name="statusRejected">#FF4D4F</color>
+</resources>

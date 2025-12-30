@@ -306,7 +306,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     // UI güncelleme - state restore için kullanılır
     private fun showPostsTab() {
         // Tab text styles
-        binding.tvTabPosts.setTextColor(requireContext().getColor(R.color.md_theme_primary))
+        binding.tvTabPosts.setTextColor(requireContext().getColor(R.color.colorPrimary))
         binding.tvTabPosts.setTypeface(null, android.graphics.Typeface.BOLD)
         binding.tvTabComments.setTextColor(requireContext().getColor(android.R.color.darker_gray))
         binding.tvTabComments.setTypeface(null, android.graphics.Typeface.NORMAL)
@@ -322,7 +322,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     // UI güncelleme - state restore için kullanılır
     private fun showCommentsTab() {
         // Tab text styles
-        binding.tvTabComments.setTextColor(requireContext().getColor(R.color.md_theme_primary))
+        binding.tvTabComments.setTextColor(requireContext().getColor(R.color.colorPrimary))
         binding.tvTabComments.setTypeface(null, android.graphics.Typeface.BOLD)
         binding.tvTabPosts.setTextColor(requireContext().getColor(android.R.color.darker_gray))
         binding.tvTabPosts.setTypeface(null, android.graphics.Typeface.NORMAL)

@@ -35,6 +35,16 @@ class PostAdapter(
                 tvLocation.text = context.getString(io.github.thwisse.kentinsesi.R.string.post_location_city_district, post.district ?: "-")
 
                 // Durum metni
+                // Durum metni ve rengi
+                val statusColor = when(post.status) {
+                    "new" -> io.github.thwisse.kentinsesi.R.color.statusNew
+                    "in_progress" -> io.github.thwisse.kentinsesi.R.color.statusInProgress
+                    "resolved" -> io.github.thwisse.kentinsesi.R.color.statusResolved
+                    "rejected" -> io.github.thwisse.kentinsesi.R.color.statusRejected
+                    else -> io.github.thwisse.kentinsesi.R.color.colorTextSecondary
+                }
+                tvStatus.setTextColor(androidx.core.content.ContextCompat.getColor(context, statusColor))
+                
                 tvStatus.text = when(post.status) {
                     "new" -> context.getString(io.github.thwisse.kentinsesi.R.string.post_status_new)
                     "in_progress" -> context.getString(io.github.thwisse.kentinsesi.R.string.post_status_in_progress)

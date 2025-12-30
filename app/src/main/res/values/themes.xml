@@ -1,21 +1,32 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Base.Theme.KentinSesi" parent="Theme.Material3.DayNight.NoActionBar">
-
-        <item name="colorPrimary">@color/md_theme_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
-        <item name="colorSecondary">@color/md_theme_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
-
-        <item name="android:colorBackground">@color/md_theme_background</item>
-        <item name="colorOnBackground">@color/md_theme_onBackground</item>
-        <item name="colorSurface">@color/md_theme_surface</item>
-        <item name="colorOnSurface">@color/md_theme_onSurface</item>
-
-        <item name="colorError">@color/md_theme_error</item>
-        <item name="colorOnError">@color/md_theme_onError</item>
-
-        <item name="android:statusBarColor">@color/md_theme_background</item>
+        
+        <!-- Ant Design Color Mapping (Mint Green Brand) -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        
+        <item name="colorError">@color/colorError</item>
+        <item name="colorOnError">@color/white</item>
+        
+        <!-- Typography -->
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="textAppearanceBody1">@style/AntTextBody1</item>
+        <item name="textAppearanceHeadline6">@style/AntTextH2</item>
+        
+        <!-- Default Component Styles -->
+        <item name="materialButtonStyle">@style/Ant.Button.Primary</item>
+        <item name="materialCardViewStyle">@style/Ant.Card</item>
+        <item name="textInputStyle">@style/Ant.Input</item>
+        
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/colorBackground</item>
         <item name="android:windowLightStatusBar">true</item>
 
     </style>

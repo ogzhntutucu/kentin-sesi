@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="md_theme_primary">#006A60</color>
-    <color name="md_theme_onPrimary">#FFFFFF</color>
-    <color name="md_theme_secondary">#006D32</color>
-    <color name="md_theme_onSecondary">#FFFFFF</color>
-    <color name="md_theme_background">#F7F7F7</color>
-    <color name="md_theme_onBackground">#1C1C1C</color>
-    <color name="md_theme_surface">#FFFFFF</color>
-    <color name="md_theme_onSurface">#1C1C1C</color>
-    <color name="md_theme_error">#B00020</color>
-    <color name="md_theme_onError">#FFFFFF</color>
-
+    <!-- ============================================ -->
+    <!-- ANT DESIGN MOBILE V5 - LIGHT MODE COLORS    -->
+    <!-- MINT GREEN BRAND PALETTE                    -->
+    <!-- ============================================ -->
+    
+    <!-- Brand - Mint Green (Modern, Eco-friendly) -->
+    <color name="colorPrimary">#00B96B</color>
+    <color name="colorPrimaryVariant">#009456</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    
+    <!-- Neutral - Backgrounds -->
+    <color name="colorBackground">#F5F5F5</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceVariant">#FAFAFA</color>
+    <color name="colorOnSurface">#1F1F1F</color>
+    
+    <!-- Typography -->
+    <color name="colorTextPrimary">#1F1F1F</color>
+    <color name="colorTextSecondary">#8C8C8C</color>
+    <color name="colorTextTertiary">#BFBFBF</color>
+    
+    <!-- Border & Divider -->
+    <color name="colorBorder">#F0F0F0</color>
+    <color name="colorDivider">#EFEFEF</color>
+    
+    <!-- Functional States -->
+    <color name="colorSuccess">#52C41A</color>
+    <color name="colorError">#FF4D4F</color>
+    <color name="colorWarning">#FAAD14</color>
+    <color name="colorInfo">#00B96B</color>
+    
+    <!-- Status Badges (Custom for Kentin Sesi) -->
+    <color name="statusNew">#00B96B</color>          <!-- Mint - Yeni (Marka rengi) -->
+    <color name="statusInProgress">#FAAD14</color>   <!-- Orange - İşlemde -->
+    <color name="statusResolved">#52C41A</color>     <!-- Green - Çözüldü -->
+    <color name="statusRejected">#FF4D4F</color>     <!-- Red - Reddedildi -->
+    
+    <!-- Legacy (Backwards Compatibility) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

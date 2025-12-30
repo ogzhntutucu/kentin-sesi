@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- ============================================ -->
+    <!-- ANT DESIGN MOBILE V5 - COMPONENT STYLES     -->
+    <!-- ============================================ -->
+    
+    <!-- ========== BUTTONS ========== -->
+    
+    <style name="Ant.Button.Primary" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="cornerRadius">@dimen/radius_capsule</item>
+        <item name="android:minHeight">@dimen/height_button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+        <item name="elevation">@dimen/elevation_none</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+    </style>
+    
+    <style name="Ant.Button.Default" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/radius_capsule</item>
+        <item name="android:minHeight">@dimen/height_button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="strokeColor">@color/colorBorder</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+    
+    <!-- ========== CARDS ========== -->
+    
+    <style name="Ant.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="cardCornerRadius">@dimen/radius_m</item>
+        <item name="strokeColor">@color/colorBorder</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardBackgroundColor">@color/colorSurface</item>
+    </style>
+    
+    <!-- ========== TEXT INPUTS ========== -->
+    
+    <style name="Ant.Input" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_s</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_s</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_s</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_s</item>
+        <item name="boxStrokeColor">?attr/colorPrimary</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxBackgroundColor">@color/colorSurfaceVariant</item>
+        <item name="android:textColorHint">@color/colorTextTertiary</item>
+    </style>
+    
+    <!-- ========== TYPOGRAPHY ========== -->
+    
+    <style name="AntTextH1">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textFontWeight" tools:targetApi="p">700</item>
+    </style>
+    
+    <style name="AntTextH2">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textFontWeight" tools:targetApi="p">600</item>
+    </style>
+    
+    <style name="AntTextBody1">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+    
+    <style name="AntTextCaption">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+    </style>
+</resources>
