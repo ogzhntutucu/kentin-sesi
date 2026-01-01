@@ -83,6 +83,7 @@ class PostRepositoryImpl @Inject constructor(
                 "authorCity" to (profile?.city ?: ""),
                 "authorDistrict" to (profile?.district ?: ""),
                 "authorTitle" to (profile?.title ?: ""),
+                "authorAvatarSeed" to (profile?.avatarSeed ?: ""),  // EKLENDI!
                 "createdAt" to FieldValue.serverTimestamp()
             )
             
@@ -306,6 +307,7 @@ class PostRepositoryImpl @Inject constructor(
                     authorCity = data["authorCity"] as? String ?: "",
                     authorDistrict = data["authorDistrict"] as? String ?: "",
                     authorTitle = data["authorTitle"] as? String ?: "",
+                    authorAvatarSeed = data["authorAvatarSeed"] as? String ?: "",  // EKLENDI!
                     text = data["text"] as? String ?: "",
                     parentCommentId = data["parentCommentId"] as? String,
                     rootCommentId = data["rootCommentId"] as? String,
@@ -448,8 +450,9 @@ class PostRepositoryImpl @Inject constructor(
                 return Resource.Error("Yanıtlanacak yorum bulunamadı")
             }
 
-            val parent = parentDoc.toObject(Comment::class.java)?.copy(id = parentDoc.id)
+            val parent = parentDoc.toObject(Comment::class.java)
                 ?: return Resource.Error("Yanıtlanacak yorum okunamadı")
+            parent.id = parentDoc.id  // Manually set ID instead of using copy()
 
 
 
@@ -691,6 +694,7 @@ class PostRepositoryImpl @Inject constructor(
                     authorCity = data["authorCity"] as? String ?: "",
                     authorDistrict = data["authorDistrict"] as? String ?: "",
                     authorTitle = data["authorTitle"] as? String ?: "",
+                    authorAvatarSeed = data["authorAvatarSeed"] as? String ?: "",  // EKLENDI!
                     createdAt = (data["createdAt"] as? com.google.firebase.Timestamp)?.toDate()
                 )
             }
