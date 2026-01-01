@@ -1,4 +1,19 @@
-GNU GENERAL PUBLIC LICENSE
+Kentin Sesi
+Copyright (C) 2026 zibidiSoft
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+-------------------------------------------------------------------------
+
+                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -379,7 +394,7 @@ that material) supplement the terms of this License with terms:
     e) Declining to grant rights under trademark law for use of some
     trade names, trademarks, or service marks; or
 
-    f) Requiring indemnification of licensors and authors of the
+    f) Requiring indemnification of licensors and authors of that
     material by anyone who conveys the material (or modified versions of
     it) with contractual assumptions of liability to the recipient, for
     any liability that these contractual assumptions directly impose on
@@ -545,7 +560,8 @@ excuse you from the conditions of this License.  If you cannot convey a
 covered work so as to satisfy simultaneously your obligations under this
 License and any other pertinent obligations, then as a consequence you may
 not convey it at all.  For example, if you agree to terms that obligate you
-to collect a royalty for further conveying from those to whom you convey	the Program, the only way you could satisfy both those terms and this
+to collect a royalty for further conveying from those to whom you convey
+the Program, the only way you could satisfy both those terms and this
 License would be to refrain entirely from conveying the Program.
 
   13. Use with the GNU Affero General Public License.
