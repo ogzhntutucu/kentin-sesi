@@ -88,6 +88,7 @@ dependencies {
 
     implementation(libs.play.services.location)
     implementation(libs.coil)
+    implementation(libs.coil.svg)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.play.services.maps)
 }

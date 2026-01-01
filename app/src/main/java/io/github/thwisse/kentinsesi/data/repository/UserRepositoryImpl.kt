@@ -50,7 +50,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     // 2. Kullanıcı Profili Güncelleme
-    override suspend fun updateUserProfile(uid: String, fullName: String, username: String, city: String, district: String): Resource<Unit> {
+    override suspend fun updateUserProfile(uid: String, fullName: String, username: String, city: String, district: String, avatarSeed: String): Resource<Unit> {
         return try {
             val normalized = normalizeUsername(username)
             val usernameRegex = Regex("^[a-z0-9_]{3,20}$")
@@ -91,6 +91,7 @@ class UserRepositoryImpl @Inject constructor(
                         "username" to normalized,
                         "city" to city,
                         "district" to district,
+                        "avatarSeed" to avatarSeed,  // EKLENDI
                         "title" to Constants.TITLE_SENSITIVE_CITIZEN,
                         "admin" to FieldValue.delete(),
                         "official" to FieldValue.delete(),

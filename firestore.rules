@@ -50,7 +50,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Oluşturma: Sadece kendi profilini oluşturabilir
-      allow create: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                       request.resource.data.keys().hasOnly(['uid', 'email', 'fullName', 'username', 'city', 'district', 'avatarSeed', 'role', 'points', 'title']);
       
       // Güncelleme: Sadece kendi profilini güncelleyebilir (admin hariç)
       allow update: if (isOwner(userId) && (
@@ -63,7 +64,7 @@ service cloud.firestore {
           existsAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)) &&
           getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == request.auth.uid
         ) ||
-        // username değişmiyorsa normal update
+        // username değişmiyorsa normal update (avatarSeed de güncellenebilir)
         (request.resource.data.username == resource.data.username)
       )) || isAdmin();
       

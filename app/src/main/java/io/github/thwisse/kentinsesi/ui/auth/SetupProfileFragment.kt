@@ -18,7 +18,9 @@ import io.github.thwisse.kentinsesi.databinding.FragmentSetupProfileBinding
 import io.github.thwisse.kentinsesi.ui.AuthActivity
 import io.github.thwisse.kentinsesi.ui.MainActivity
 import io.github.thwisse.kentinsesi.util.Resource
+import io.github.thwisse.kentinsesi.util.loadAvatar
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @AndroidEntryPoint
 class SetupProfileFragment : Fragment() {
@@ -27,6 +29,10 @@ class SetupProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: AuthViewModel by viewModels()
+    
+    // Avatar history management
+    private val avatarHistory = mutableListOf<String>()
+    private var currentAvatarIndex = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,6 +46,7 @@ class SetupProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupDropdowns()
+        setupAvatarSelection()
         setupClickListeners()
         observeState()
     }
@@ -55,6 +62,53 @@ class SetupProfileFragment : Fragment() {
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, districts)
         binding.actvDistrict.setAdapter(adapter)
     }
+    
+    private fun setupAvatarSelection() {
+        // İlk avatar'ı otomatik üret
+        if (avatarHistory.isEmpty()) {
+            val initialSeed = generateAvatarSeed()
+            avatarHistory.add(initialSeed)
+            currentAvatarIndex = 0
+            binding.ivAvatar.loadAvatar(initialSeed)
+        }
+        
+        updateAvatarButtons()
+        
+        // Previous button
+        binding.btnAvatarPrevious.setOnClickListener {
+            if (currentAvatarIndex > 0) {
+                currentAvatarIndex--
+                binding.ivAvatar.loadAvatar(avatarHistory[currentAvatarIndex])
+                updateAvatarButtons()
+            }
+        }
+        
+        // Next button
+        binding.btnAvatarNext.setOnClickListener {
+            if (currentAvatarIndex < avatarHistory.size - 1) {
+                // Geçmişte gezinme
+                currentAvatarIndex++
+                binding.ivAvatar.loadAvatar(avatarHistory[currentAvatarIndex])
+            } else {
+                // Yeni avatar üret
+                if (avatarHistory.size >= 31) {
+                    // Max limit - en eskiyi sil
+                    avatarHistory.removeAt(0)
+                }
+                val newSeed = generateAvatarSeed()
+                avatarHistory.add(newSeed)
+                currentAvatarIndex = avatarHistory.size - 1
+                binding.ivAvatar.loadAvatar(newSeed)
+            }
+            updateAvatarButtons()
+        }
+    }
+    
+    private fun updateAvatarButtons() {
+        binding.btnAvatarPrevious.isEnabled = currentAvatarIndex > 0
+    }
+    
+    private fun generateAvatarSeed(): String = UUID.randomUUID().toString()
 
     private fun setupClickListeners() {
         binding.btnSaveProfile.setOnClickListener {
@@ -92,8 +146,11 @@ class SetupProfileFragment : Fragment() {
                 binding.tilDistrict.error = null
             }
 
-            // ViewModel'e verileri gönder
-            viewModel.completeProfile(fullName, username, city, district)
+            // Şu an seçili olan avatar seed'ini al
+            val avatarSeed = avatarHistory.getOrNull(currentAvatarIndex) ?: generateAvatarSeed()
+            
+            // ViewModel'e verileri gönder (avatarSeed ekledik)
+            viewModel.completeProfile(fullName, username, city, district, avatarSeed)
         }
     }
 

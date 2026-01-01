@@ -112,14 +112,14 @@ class AuthViewModel @Inject constructor(
     }
 
     // PROFİL TAMAMLAMA (YENİ)
-    fun completeProfile(fullName: String, username: String, city: String, district: String) {
+    fun completeProfile(fullName: String, username: String, city: String, district: String, avatarSeed: String) {
         viewModelScope.launch {
             // Resource.Loading<Unit> olarak tip belirtiyoruz (Hata: Cannot infer type çözümü)
             _updateProfileState.value = Resource.Loading()
 
             val currentUser = authRepository.currentUser
             if (currentUser != null) {
-                val result = userRepository.updateUserProfile(currentUser.uid, fullName, username, city, district)
+                val result = userRepository.updateUserProfile(currentUser.uid, fullName, username, city, district, avatarSeed)
                 _updateProfileState.value = result
             } else {
                 // Resource.Error<Unit> olarak tip belirtiyoruz

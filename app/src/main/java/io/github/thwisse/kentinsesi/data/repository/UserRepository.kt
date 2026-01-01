@@ -7,7 +7,7 @@ import io.github.thwisse.kentinsesi.util.Resource
 interface UserRepository {
     suspend fun createUserProfile(uid: String, fullName: String, email: String): Resource<Unit>
     
-    suspend fun updateUserProfile(uid: String, fullName: String, username: String, city: String, district: String): Resource<Unit>
+    suspend fun updateUserProfile(uid: String, fullName: String, username: String, city: String, district: String, avatarSeed: String): Resource<Unit>
     
     // Kullanıcı bilgisini getir
     suspend fun getUser(uid: String): Resource<User>

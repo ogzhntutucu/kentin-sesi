@@ -16,6 +16,7 @@ data class User(
     val username: String = "", // @kullaniciadi gibi (isteğe bağlı)
     val city: String = "",     // Örn: Hatay
     val district: String = "", // Örn: İskenderun
+    val avatarSeed: String = "", // DiceBear avatar seed (UUID format)
     
     // NOT: Firestore string olarak sakladığı için String kullanıyoruz
     // Ama enum'a çevirmek için roleEnum property'si ekledik
