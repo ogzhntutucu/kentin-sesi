@@ -95,6 +95,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         showThemeDialog()
                         true
                     }
+                    R.id.action_about -> {
+                        findNavController().navigate(R.id.action_nav_profile_to_aboutFragment)
+                        true
+                    }
                     R.id.action_logout -> {
                         doLogout()
                         true

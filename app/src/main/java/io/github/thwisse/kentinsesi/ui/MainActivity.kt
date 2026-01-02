@@ -109,4 +109,12 @@ class MainActivity : AppCompatActivity() {
         val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
         return currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
+    
+    fun hideBottomNavigation() {
+        binding.bottomNavView.visibility = android.view.View.GONE
+    }
+    
+    fun showBottomNavigation() {
+        binding.bottomNavView.visibility = android.view.View.VISIBLE
+    }
 }

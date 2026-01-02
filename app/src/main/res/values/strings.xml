@@ -281,4 +281,23 @@
     <string name="district_samandag">Samandağ</string>
     <string name="district_yayladag">Yayladağı</string>
 
+    
+    <!-- zibidiSoft Branding -->
+    <string name="made_with_love_by">Made with ❤️ by</string>
+    <string name="zibidisoft">Zibidi Software</string>
+    <string name="about">About</string>
+    <string name="about_kentin_sesi">About Kentin Sesi</string>
+    <string name="developer">Developer</string>
+    <string name="organization">Organization</string>
+    <string name="app_version">Version</string>
+    <string name="contact">Contact</string>
+    <string name="github">GitHub</string>
+    <string name="license">License</string>
+    <string name="about_app_description">Kentin Sesi is a civic tech platform that empowers citizens to report, track, and participate in solving local issues in their cities. This open-source project promotes transparency, accountability, and community engagement in local governance.</string>
+    <string name="about_zibidisoft_description">zibidiSoft is an open-source software organization dedicated to creating technology for social good. Established on January 1, 2026, we focus on building accessible, community-driven platforms that serve the public interest.</string>
+    <string name="about_developer_name">Oğuzhan Tutucu</string>
+    <string name="about_github_link">github.com/zibidiSoft</string>
+    <string name="about_email_link">zibidisoft@protonmail.com</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_app_vision">Our vision is to create a more transparent, accountable, and participatory city governance through technology accessible to everyone.</string>
 </resources>
