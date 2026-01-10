@@ -21,7 +21,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ui.AuthActivity"
             android:exported="true">
