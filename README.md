@@ -1,8 +1,8 @@
 # Kentin Sesi
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg)](https://kotlinlang.org)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 **Kentin Sesi**, vatandaşların yaşadıkları şehirdeki sorunları raporlayabildiği, takip edebildiği ve yerel yönetime dair katılımcı bir kültürün gelişmesine katkıda bulunduğu bir **civic tech** (sivil teknoloji) mobil platformudur. Bu proje **açık kaynak** ve **kâr amacı gütmeyen** bir sosyal girişimdir.
 
@@ -277,42 +277,34 @@ Kentin Sesi açık kaynak bir projedir ve katkıları memnuniyetle karşılar!
 ### Önemli Notlar
 
 - Projenin genel ürün yönü ve kararları **zibidiSoft** ekibi tarafından yönetilir
-- Tüm katkılar GPLv3 lisansı ile lisanslanır
+- Tüm katkılar Apache 2.0 lisansı ile lisanslanır
 - Katkılarınız ile **civic tech** hareketine katkıda bulunuyorsunuz 🎉
 
 ---
 
-## 📄 Lisans
+## 📄 Lisans (License)
 
-Bu proje **GNU General Public License v3.0 (GPLv3)** ile lisanslanmıştır.
+Bu projenin kaynak kodları **Apache License 2.0** ile lisanslanmıştır. 
+Detaylar için [LICENSE](LICENSE) dosyasına bakabilirsiniz.
 
-```
-Kentin Sesi
-Copyright (C) 2026 zibidiSoft
+### ⚠️ Marka ve Logo Kullanımı (Trademark & Branding)
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+**Lütfen Dikkat:** Bu repodaki kaynak kodları özgürdür ve çatallanabilir (fork edilebilir). 
+ANCAK; **"Kentin Sesi"** ismi, **zibidiSoft** logosu ve uygulamanın görsel marka kimliği (branding assets) **lisans kapsamı dışındadır**.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-```
+Eğer bu projeyi kendi sunucunuzda kuracak veya mağazalarda yayınlayacaksanız:
+1. Uygulamanın adını değiştirmelisiniz.
+2. Logoları (zibidiSoft ve Kentin Sesi logolarını) kendi logolarınızla değiştirmelisiniz.
+3. Kullanıcı arayüzünde "Kentin Sesi" ibaresi geçen yerleri kaldırmalısınız.
 
-### Neden GPLv3?
+**Kod:** Apache 2.0 ✅ Açık  
+**Marka:** Korumalı ⚠️ İzin gerekir
 
-Bu bir **sosyal girişim projesidir**. Kod tabanımızın:
-- ✅ İncelenmesini
-- ✅ Öğrenilmesini
-- ✅ Geliştirilmesini
+### Neden Apache 2.0?
 
-teşvik ediyoruz. **GPLv3** lisansını seçtik çünkü bu kodların alınıp, kapatılıp ticari bir ürüne dönüştürülmesine karşıyız. 
+Civic tech alanında **açıklık** (openness) ve **erişilebilirlik** (accessibility) kritik öneme sahiptir. Apache 2.0 lisansı, bu projenin geniş bir kitleye ulaşmasını ve farklı şekillerde kullanılabilmesini sağlar. Topluluk tabanlı geliştirmeyi teşvik ederken, aynı zamanda ticari kullanım ve yenilikçi uyarlamalara da olanak tanır.
 
-**Eğer bu kodu kullanacaksanız, sizin de açık kaynak kalmanız gerekir.**
-
-Detaylı bilgi için: [LICENSE](LICENSE) dosyasına bakın.
+Detaylı bilgi için: [LICENSE](LICENSE) ve [NOTICE](NOTICE) dosyalarına bakın.
 
 ---
 
@@ -330,8 +322,6 @@ Bu proje şu açık kaynak kütüphaneleri kullanmaktadır:
 ---
 
 <div align="center">
-
-**Kentin Sesi**
 
 Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
 

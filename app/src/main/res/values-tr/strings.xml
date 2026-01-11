@@ -272,4 +272,29 @@
     <string name="district_samandag">Samandağ</string>
     <string name="district_yayladag">Yayladağı</string>
 
+    <!-- zibidiSoft Branding - Turkish -->
+    <string name="made_with_love_by">❤️ ile yapıldı:</string>
+    <string name="zibidisoft">zibidiSoft</string>
+    <string name="about">Hakkında</string>
+    <string name="about_kentin_sesi">Kentin Sesi Hakkında</string>
+    <string name="developer">Geliştirici</string>
+    <string name="organization">Organizasyon</string>
+    <string name="app_version">Versiyon</string>
+    <string name="contact">İletişim</string>
+    <string name="github">GitHub</string>
+    <string name="license">Lisans</string>
+    
+    <!-- About Screen Content - Turkish -->
+    <string name="about_app_description">Kentin Sesi, vatandaşların yerel sorunları raporlamasına, takip etmesine ve çözüm süreçlerine katılmasına olanak tanıyan bir "sivil teknoloji" platformudur. Bu açık kaynak proje, yerel yönetimlerde şeffaflığı, hesap verebilirliği ve topluluk katılımını teşvik eder.</string>
+    <string name="about_zibidisoft_description">zibidiSoft, toplumsal fayda için teknoloji geliştirmeye adanmış bir açık kaynak yazılım organizasyonudur. \n\n1 Ocak 2026\'da kuruldu ve kamu yararına hizmet eden, erişilebilir ve topluluk odaklı platformlar oluşturmaya odaklanıyoruz.</string>
+    <string name="about_developer_name">Oğuzhan Tutucu</string>
+    <string name="about_github_link">github.com/zibidiSoft</string>
+    <string name="about_email_link">zibidisoft@protonmail.com</string>
+    <string name="about_license_name">Apache Lisansı 2.0</string>
+    <string name="about_license_description">Bu ücretsiz bir yazılımdır. Belirli koşullar altında yeniden dağıtabilirsiniz. Ayrıntılar için LICENSE dosyasına bakın.</string>
+    <string name="about_app_vision">Vizyonumuz, herkesçe erişilebilir teknoloji ile daha şeffaf, hesap verebilir ve katılımcı bir şehir yönetimi oluşturmaktır.</string>
+    
+    <!-- Copyright and Trademark Notice - Turkish -->
+    <string name="about_copyright_notice">Kentin Sesi v1.0\n© 2026 zibidiSoft. Tüm Hakları Saklıdır.\n\n\'Kentin Sesi\' ismi ve logoları zibidiSoft\'un ticari markasıdır ve izinsiz kullanılamaz.</string>
+
 </resources>

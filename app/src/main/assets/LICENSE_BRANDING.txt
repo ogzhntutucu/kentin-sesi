@@ -1,0 +1,16 @@
+The images and branding assets in this project are NOT covered by the Apache 2.0 license.
+
+Specifically, the following are exclusive property of zibidiSoft and cannot be used 
+in derivative works without permission:
+
+- "Kentin Sesi" application name and logo
+- "zibidiSoft" name and logo (app/src/main/res/drawable/zibidisoft_logo_512x512.png)
+- All other branding materials and visual identity elements
+
+If you fork or redistribute this software, you MUST:
+1. Change the application name from "Kentin Sesi"
+2. Remove or replace all zibidiSoft branding assets
+3. Create your own visual identity
+
+The source code remains under Apache 2.0 - you are free to use, modify, and distribute it.
+Only the branding is protected.
