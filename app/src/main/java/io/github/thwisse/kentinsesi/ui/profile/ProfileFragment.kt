@@ -172,9 +172,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun setupUserInfo() {
-        // Email'i Firebase User'dan göster
-        val firebaseUser = viewModel.currentUser
-        binding.tvUserEmail.text = firebaseUser?.email ?: "Kullanıcı"
         
         // Profil bilgilerini (fullName, city, district) User model'den göster
         viewModel.userProfile.observe(viewLifecycleOwner) { resource ->

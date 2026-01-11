@@ -274,10 +274,10 @@
 
     <!-- zibidiSoft Branding - Turkish -->
     <string name="made_with_love_by">❤️ ile yapıldı:</string>
-    <string name="zibidisoft">zibidiSoft</string>
+    <string name="zibidisoft">zibidi software</string>
     <string name="about">Hakkında</string>
     <string name="about_kentin_sesi">Kentin Sesi Hakkında</string>
-    <string name="developer">Geliştirici</string>
+    <string name="developer">Geliştiriciler</string>
     <string name="organization">Organizasyon</string>
     <string name="app_version">Versiyon</string>
     <string name="contact">İletişim</string>
