@@ -6,12 +6,6 @@
 
 **Kentin Sesi**, vatandaşların yaşadıkları şehirdeki sorunları raporlayabildiği, takip edebildiği ve yerel yönetime dair katılımcı bir kültürün gelişmesine katkıda bulunduğu bir **civic tech** (sivil teknoloji) mobil platformudur. Bu proje **açık kaynak** ve **kâr amacı gütmeyen** bir sosyal girişimdir.
 
-<div align="center">
-
-Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
-
-</div>
-
 ---
 
 ## 📋 İçindekiler
@@ -19,10 +13,11 @@ Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
 - [Civic Tech Nedir?](#-civic-tech-nedir)
 - [Proje Hakkında](#-proje-hakkında)
 - [Özellikler](#-özellikler)
+- [Ekran Görüntüleri](-#ekran-görüntüleri)
 - [Teknoloji Stack](#-teknoloji-stack)
 - [Kurulum](#-kurulum)
 - [Katkıda Bulunma](#-katkıda-bulunma)
-- [Lisans](#-lisans)
+- [Lisans](#-lisans-license)
 
 ---
 
@@ -56,6 +51,24 @@ Daha **şeffaf**, daha **hesap verebilir** ve daha **katılımcı** bir şehir y
 - **Hedef:** Türkiye (Pilot: Hatay)
 - **Kullanıcı Profili:** Vatandaşlar, yerel yönetim görevlileri, uzmanlar
 - **Global Adaptasyon:** Proje her ülkeye uyarlanabilir şekilde tasarlanmıştır
+
+---
+
+## 📱 Ekran Görüntüleri
+
+### Uygulama Ekran Görüntüleri
+
+| Ana Akış | Harita | Filtreleme | Paylaşım Oluştur |
+| :---: | :---: | :---: | :---: |
+| <img src="./screenshots/anaakis.png" width="200" /> | <img src="./screenshots/harita.png" width="200" /> | <img src="./screenshots/filtreleme.png" width="200" /> | <img src="./screenshots/postolustur.png" width="200" /> |
+
+| Paylaşım Detay | Yorumlar | Bildirimler | Güncellemeler |
+| :---: | :---: | :---: | :---: |
+| <img src="./screenshots/postdetay.png" width="200" /> | <img src="./screenshots/yorumlar.png" width="200" /> | <img src="./screenshots/bildirimler.png" width="200" /> | <img src="./screenshots/guncellemeler.png" width="200" /> |
+
+| Profil | Profil Oluştur | Yönetici Paneli | Hakkında |
+| :---: | :---: | :---: | :---: |
+| <img src="./screenshots/profil.png" width="200" /> | <img src="./screenshots/profilolustur.png" width="200" /> | <img src="./screenshots/adminpaneli.png" width="200" /> | <img src="./screenshots/hakkinda.png" width="200" /> |
 
 ---
 
@@ -97,7 +110,7 @@ Daha **şeffaf**, daha **hesap verebilir** ve daha **katılımcı** bir şehir y
 - **Post detail map:** Detay ekranında embedded mini harita
 - **Marker bilgileri:** Haritadaki işaretlere tıklayınca post detayına gitme
 
-### 🔍 Filtreleme Sistemi
+### ⌨️ Filtreleme Sistemi
 - **Çoklu filtreler:** İlçe, kategori, durum bazlı filtreleme
 - **Dinamik UI:** Chip'ler ile aktif filtreleri gösterme
 - **Filter presets:** Özel filtre kombinasyonlarını kaydetme
@@ -134,7 +147,7 @@ Daha **şeffaf**, daha **hesap verebilir** ve daha **katılımcı** bir şehir y
 
 ---
 
-## 🛠️ Teknoloji Stack
+## 🔍 Teknoloji Stack
 
 ### Platform ve Dil
 - **Platform:** Android (minSdk 24, targetSdk 36)
@@ -192,7 +205,7 @@ Daha **şeffaf**, daha **hesap verebilir** ve daha **katılımcı** bir şehir y
 #### 1. Repoyu Klonlayın
 
 ```bash
-git clone https://github.com/zibidiSoft/kentin-sesi.git
+git clone https://github.com/thwisse/kentin-sesi.git
 cd kentin-sesi
 ```
 
@@ -274,31 +287,12 @@ Kentin Sesi açık kaynak bir projedir ve katkıları memnuniyetle karşılar!
 - **Testler:** Değişiklikleriniz için uygun testler ekleyin
 - **Dokümantasyon:** README veya kod yorumlarını güncelleyin
 
-### Önemli Notlar
-
-- Projenin genel ürün yönü ve kararları **zibidiSoft** ekibi tarafından yönetilir
-- Tüm katkılar Apache 2.0 lisansı ile lisanslanır
-- Katkılarınız ile **civic tech** hareketine katkıda bulunuyorsunuz 🎉
-
 ---
 
 ## 📄 Lisans (License)
 
 Bu projenin kaynak kodları **Apache License 2.0** ile lisanslanmıştır. 
 Detaylar için [LICENSE](LICENSE) dosyasına bakabilirsiniz.
-
-### ⚠️ Marka ve Logo Kullanımı (Trademark & Branding)
-
-**Lütfen Dikkat:** Bu repodaki kaynak kodları özgürdür ve çatallanabilir (fork edilebilir). 
-ANCAK; **"Kentin Sesi"** ismi, **zibidiSoft** logosu ve uygulamanın görsel marka kimliği (branding assets) **lisans kapsamı dışındadır**.
-
-Eğer bu projeyi kendi sunucunuzda kuracak veya mağazalarda yayınlayacaksanız:
-1. Uygulamanın adını değiştirmelisiniz.
-2. Logoları (zibidiSoft ve Kentin Sesi logolarını) kendi logolarınızla değiştirmelisiniz.
-3. Kullanıcı arayüzünde "Kentin Sesi" ibaresi geçen yerleri kaldırmalısınız.
-
-**Kod:** Apache 2.0 ✅ Açık  
-**Marka:** Korumalı ⚠️ İzin gerekir
 
 ### Neden Apache 2.0?
 
@@ -323,6 +317,6 @@ Bu proje şu açık kaynak kütüphaneleri kullanmaktadır:
 
 <div align="center">
 
-Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
+Made with ❤️ by [zibidi software](https://github.com/zibidiSoft)
 
 </div>
