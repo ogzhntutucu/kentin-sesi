@@ -205,7 +205,7 @@ Daha **şeffaf**, daha **hesap verebilir** ve daha **katılımcı** bir şehir y
 #### 1. Repoyu Klonlayın
 
 ```bash
-git clone https://github.com/thwisse/kentin-sesi.git
+git clone https://github.com/ogzhntutucu/kentin-sesi.git
 cd kentin-sesi
 ```
 
