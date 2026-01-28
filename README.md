@@ -323,4 +323,4 @@ Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
 
 Birkaç senedir üzerinde düşündüğüm ve yapmak istediğim bu projeyi üniversitede bitirme projesi olarak yaptım. Pilot bölge olarak Hatay'ı seçmiştim ve yalnızca bir prototipti. Bu projeyi bir Android projesi ve bir prototip olmaktan çıkarıp, tüm Türkiye'de aktif olarak kullanılan bir platforma dönüştüreceğim. Bu daha önce Türkiye'de, hatta birçok özelliğiyle dünyada bile denenmemiş bir sivil teknoloji (civic tech) projesidir.
 
-[zibidi software](https://github.com/zibidiSoft) adında bir organizasyon kurdum, sloganı da şu şekilde: toplumsal fayda için teknoloji geliştiren, kâr amacı gütmeyen, genç ruhlu bir yazılım organizasyonu. Projeyi bu organizasyon bünyesinde açık kaynaklı olarak geliştirmeye devam ediyorum.
+[zibidi software](https://github.com/zibidiSoft) adında bir yazılım organizasyonu kurdum, projeyi bu organizasyon bünyesinde açık kaynaklı olarak geliştirmeye devam ediyorum.
