@@ -317,7 +317,7 @@ Bu proje şu açık kaynak kütüphaneleri kullanmaktadır:
 
 <div align="center">
 
-Made with ❤️ by [zibidi software](https://github.com/zibidiSoft)
+Made with ❤️ by [zibidiSoft](https://github.com/zibidiSoft)
 
 </div>
 
